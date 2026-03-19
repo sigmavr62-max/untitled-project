@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Untitled [TEST]</title>
+    <!-- CHANGE THE NAME BELOW TO CHANGE THE NAME ON THE PAGE -->
+    <title>Polar Project</title> 
     
     <style>
-        /* This creates the link to your uploaded file */
         @font-face {
             font-family: 'SF-Pro-Custom';
             src: url('SF-Pro.tff') format('truetype');
@@ -15,36 +15,47 @@
         }
 
         body {
-            /* This tells the browser to use your font first, then system defaults */
             font-family: 'SF-Pro-Custom', -apple-system, BlinkMacSystemFont, sans-serif;
-            background-color: #000; /* Making it dark for a 'pro' look */
+            background-color: #000;
             color: #fff;
             padding: 50px;
             line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            height: 80vh;
         }
 
         .disclaimer {
             font-size: 0.9rem;
             text-transform: uppercase;
-            letter-spacing: 1px;
-            color: #ff453a; /* A subtle 'warning' red */
-            margin-bottom: 20px;
+            letter-spacing: 2px;
+            color: #ff453a;
+            margin-bottom: 10px;
         }
 
-        h1 {
-            font-size: 4rem;
-            font-weight: 700;
+        #site-name {
+            font-size: 5rem;
+            font-weight: 800;
             margin: 0;
+            letter-spacing: -2px; /* Gives it that Apple/SF Pro look */
         }
     </style>
 </head>
 <body>
 
     <div class="disclaimer">
-        Disclaimer: this project is currently under development, please expect bugs
+        Welcome to
     </div>
     
-    <h1>polar</h1>
+    <!-- This ID "site-name" is where the magic happens -->
+    <h1 id="site-name">Untitled [TEST]</h1>
+
+    <script>
+        // This tiny bit of code takes your <title> and puts it in the <h1>
+        const titleText = document.title;
+        document.getElementById('site-name').innerText = titleText;
+    </script>
 
 </body>
 </html>
