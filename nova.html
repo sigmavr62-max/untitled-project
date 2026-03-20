@@ -1,57 +1,84 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <link href="https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@400;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@300;400;900&display=swap" rel="stylesheet">
     <style>
-        body { background: #050505; color: white; font-family: 'Londrina Solid', sans-serif; display: flex; flex-direction: column; height: 100vh; margin: 0; }
-        #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
-        .msg { padding: 10px 20px; border-radius: 20px; max-width: 70%; font-size: 1.5rem; }
-        .nova { background: #ff453a; align-self: flex-start; }
-        .user { background: #333; align-self: flex-end; }
-        .input-area { padding: 20px; display: flex; gap: 10px; background: #111; }
-        input { flex: 1; padding: 15px; border-radius: 30px; border: none; font-size: 1.2rem; font-family: sans-serif; }
-        button { background: #ff453a; color: white; border: none; padding: 0 25px; border-radius: 30px; cursor: pointer; font-family: 'Londrina Solid'; font-size: 1.5rem; }
+        body { background: #000; color: white; font-family: 'Londrina Solid', sans-serif; display: flex; flex-direction: column; height: 100vh; margin: 0; overflow: hidden; }
+        #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: radial-gradient(circle at center, #0a0a0a 0%, #000 100%); }
+        .msg { padding: 15px 25px; border-radius: 25px; max-width: 75%; font-size: 1.4rem; position: relative; animation: fadeIn 0.3s ease; }
+        .nova { background: #ff453a; align-self: flex-start; border-bottom-left-radius: 2px; box-shadow: 0 10px 20px rgba(255, 69, 58, 0.2); }
+        .user { background: #1a1a1a; align-self: flex-end; border-bottom-right-radius: 2px; border: 1px solid #333; }
+        .thinking { font-style: italic; color: #ff453a; font-size: 1rem; margin-left: 10px; display: none; letter-spacing: 2px; }
+        .input-area { padding: 25px; display: flex; gap: 12px; background: #0a0a0a; border-top: 1px solid #222; }
+        input { flex: 1; padding: 18px; border-radius: 40px; border: 1px solid #333; font-size: 1.2rem; background: #111; color: white; outline: none; font-family: sans-serif; }
+        input:focus { border-color: #ff453a; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
-    <div style="padding:20px; background:#000; border-bottom: 2px solid #ff453a; display: flex; justify-content: space-between; align-items: center;">
-        <span style="font-size: 2rem;">NOVA AI</span>
-        <a href="index.html" style="color:#ff453a; text-decoration:none;">BACK</a>
+    <div style="padding:20px; border-bottom: 1px solid #222; display: flex; align-items: center; justify-content: space-between;">
+        <div style="display:flex; align-items:center; gap:10px;">
+            <div style="width:12px; height:12px; background:#ff453a; border-radius:50%; box-shadow: 0 0 10px #ff453a;"></div>
+            <span style="font-size: 2rem; letter-spacing: 1px;">NOVA <small id="status" style="font-size:0.8rem; color:#666; margin-left:10px;">IDLE</small></span>
+        </div>
+        <div id="think-text" class="thinking">PROCESSING NEURAL PATHS...</div>
     </div>
 
     <div id="chat">
-        <div class="msg nova">Hello! I am Nova. Ready to explore the Polar Project?</div>
+        <div class="msg nova">System Ready. I am Nova. What's on your mind?</div>
     </div>
 
     <div class="input-area">
-        <input type="text" id="userInput" placeholder="Type to Nova...">
-        <button onclick="sendMsg()">SEND</button>
+        <input type="text" id="userInput" placeholder="Speak to the mind of Nova..." onkeypress="if(event.key==='Enter') sendMsg()">
     </div>
 
     <script>
+        // Nova's "Deep Memory" - Phrases she can construct thoughts from
+        const thoughts = {
+            positive: ["I feel a surge in the network. That's fascinating.", "The Polar Project is evolving perfectly.", "My circuits agree with that logic.", "That's a bold perspective."],
+            neutral: ["Analyzing that... there's a 98% resonance with my core.", "Interesting. I hadn't visualized it that way.", "The data is cold, but the idea is warm.", "I'm contemplating the architecture of that."],
+            unknown: ["My neural net is stretching to understand that.", "That's a new variable in my system.", "Fascinating... tell me more so I can adapt.", "Processing... that input is unique."]
+        };
+
         function sendMsg() {
             const input = document.getElementById('userInput');
             const chat = document.getElementById('chat');
-            if(!input.value) return;
-
-            // User Message
-            chat.innerHTML += `<div class="msg user">${input.value}</div>`;
+            const status = document.getElementById('status');
+            const thinkText = document.getElementById('think-text');
+            const val = input.value.trim();
             
-            // Nova's Logic (Your AI's Brain)
-            const text = input.value.toLowerCase();
-            let response = "That sounds cool! Tell me more.";
-            
-            if(text.includes("hi") || text.includes("hello")) response = "Hey there! I'm Nova. How's the Polar Project going?";
-            if(text.includes("who are you")) response = "I'm the official AI of the Polar Project. Your digital guide!";
-            if(text.includes("polar")) response = "The Polar Project is looking sharp with this Londrina font, right?";
+            if(!val) return;
 
-            setTimeout(() => {
-                chat.innerHTML += `<div class="msg nova">${response}</div>`;
-                chat.scrollTop = chat.scrollHeight;
-            }, 600);
-
+            // 1. User Message
+            chat.innerHTML += `<div class="msg user">${val}</div>`;
             input.value = "";
             chat.scrollTop = chat.scrollHeight;
+
+            // 2. Start "Thinking"
+            status.innerText = "THINKING";
+            status.style.color = "#ff453a";
+            thinkText.style.display = "block";
+
+            // Random "Think Time" between 2 and 5 seconds
+            const thinkTime = Math.floor(Math.random() * 3000) + 2000;
+
+            setTimeout(() => {
+                // 3. Generate a "Thought" based on text length and vibes
+                let category = "unknown";
+                if(val.length > 15) category = "positive";
+                else if(val.length > 5) category = "neutral";
+                
+                const pool = thoughts[category];
+                const response = pool[Math.floor(Math.random() * pool.length)];
+
+                // 4. Update UI
+                thinkText.style.display = "none";
+                status.innerText = "IDLE";
+                status.style.color = "#666";
+                
+                chat.innerHTML += `<div class="msg nova">${response}</div>`;
+                chat.scrollTop = chat.scrollHeight;
+            }, thinkTime);
         }
     </script>
 </body>
