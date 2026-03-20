@@ -1,1 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link href="https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@400;900&display=swap" rel="stylesheet">
+    <style>
+        body { background: #050505; color: white; font-family: 'Londrina Solid', sans-serif; display: flex; flex-direction: column; height: 100vh; margin: 0; }
+        #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .msg { padding: 10px 20px; border-radius: 20px; max-width: 70%; font-size: 1.5rem; }
+        .nova { background: #ff453a; align-self: flex-start; }
+        .user { background: #333; align-self: flex-end; }
+        .input-area { padding: 20px; display: flex; gap: 10px; background: #111; }
+        input { flex: 1; padding: 15px; border-radius: 30px; border: none; font-size: 1.2rem; font-family: sans-serif; }
+        button { background: #ff453a; color: white; border: none; padding: 0 25px; border-radius: 30px; cursor: pointer; font-family: 'Londrina Solid'; font-size: 1.5rem; }
+    </style>
+</head>
+<body>
+    <div style="padding:20px; background:#000; border-bottom: 2px solid #ff453a; display: flex; justify-content: space-between; align-items: center;">
+        <span style="font-size: 2rem;">NOVA AI</span>
+        <a href="index.html" style="color:#ff453a; text-decoration:none;">BACK</a>
+    </div>
 
+    <div id="chat">
+        <div class="msg nova">Hello! I am Nova. Ready to explore the Polar Project?</div>
+    </div>
+
+    <div class="input-area">
+        <input type="text" id="userInput" placeholder="Type to Nova...">
+        <button onclick="sendMsg()">SEND</button>
+    </div>
+
+    <script>
+        function sendMsg() {
+            const input = document.getElementById('userInput');
+            const chat = document.getElementById('chat');
+            if(!input.value) return;
+
+            // User Message
+            chat.innerHTML += `<div class="msg user">${input.value}</div>`;
+            
+            // Nova's Logic (Your AI's Brain)
+            const text = input.value.toLowerCase();
+            let response = "That sounds cool! Tell me more.";
+            
+            if(text.includes("hi") || text.includes("hello")) response = "Hey there! I'm Nova. How's the Polar Project going?";
+            if(text.includes("who are you")) response = "I'm the official AI of the Polar Project. Your digital guide!";
+            if(text.includes("polar")) response = "The Polar Project is looking sharp with this Londrina font, right?";
+
+            setTimeout(() => {
+                chat.innerHTML += `<div class="msg nova">${response}</div>`;
+                chat.scrollTop = chat.scrollHeight;
+            }, 600);
+
+            input.value = "";
+            chat.scrollTop = chat.scrollHeight;
+        }
+    </script>
+</body>
+</html>
