@@ -4,97 +4,89 @@
     <link href="https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@300;400;900&display=swap" rel="stylesheet">
     <style>
         body { background: #000; color: white; font-family: 'Londrina Solid', sans-serif; display: flex; flex-direction: column; height: 100vh; margin: 0; overflow: hidden; }
-        #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: radial-gradient(circle at 50% 50%, #0a0a15 0%, #000 100%); }
-        .msg { padding: 15px 25px; border-radius: 25px; max-width: 75%; font-size: 1.4rem; animation: fadeIn 0.4s cubic-bezier(0,1,.5,1); }
-        .nova { background: #ff453a; align-self: flex-start; border-bottom-left-radius: 2px; box-shadow: 0 5px 15px rgba(255, 69, 58, 0.3); }
+        #chat { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; background: #050505; scroll-behavior: smooth; }
+        .msg { padding: 15px 25px; border-radius: 25px; max-width: 75%; font-size: 1.4rem; animation: pop 0.3s ease; }
+        .nova { background: #ff453a; align-self: flex-start; border-bottom-left-radius: 2px; }
         .user { background: #1a1a1a; align-self: flex-end; border-bottom-right-radius: 2px; border: 1px solid #333; }
-        .status-bar { padding: 15px 25px; border-bottom: 1px solid #222; display: flex; align-items: center; justify-content: space-between; background: #000; }
-        #think-overlay { display: none; color: #ff453a; font-size: 0.9rem; letter-spacing: 2px; font-weight: 300; }
-        .input-area { padding: 25px; display: flex; background: #050505; border-top: 1px solid #111; }
-        input { flex: 1; padding: 18px; border-radius: 40px; border: 1px solid #222; font-size: 1.2rem; background: #111; color: white; outline: none; font-family: sans-serif; transition: 0.3s; }
-        input:focus { border-color: #ff453a; box-shadow: 0 0 10px rgba(255, 69, 58, 0.1); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .header { padding: 20px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
+        #think-ui { display: none; color: #ff453a; font-size: 0.8rem; letter-spacing: 3px; font-weight: 300; }
+        .input-area { padding: 25px; display: flex; background: #000; border-top: 1px solid #222; }
+        input { flex: 1; padding: 18px; border-radius: 40px; border: 1px solid #333; font-size: 1.2rem; background: #111; color: white; outline: none; }
+        @keyframes pop { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
 <body>
-    <div class="status-bar">
-        <div style="display:flex; align-items:center; gap:10px;">
-            <div id="led" style="width:10px; height:10px; background:#444; border-radius:50%; transition: 0.3s;"></div>
-            <span style="font-size: 1.8rem; letter-spacing: 1px;">NOVA <small id="mode" style="font-size:0.7rem; color:#666; margin-left:5px;">IDLE</small></span>
-        </div>
-        <div id="think-overlay">NEURAL SYNAPSE FIRING...</div>
+    <div class="header">
+        <span style="font-size: 2rem;">NOVA <small style="color:#ff453a; font-size:0.7rem">GPU ACCELERATED</small></span>
+        <div id="think-ui">ANALYZING NEURAL TENSORS...</div>
     </div>
 
     <div id="chat">
-        <div class="msg nova">Hi im nova!</div>
+        <div class="msg nova">Nova initialized. Utilizing local hardware. How can I help?</div>
     </div>
 
     <div class="input-area">
-        <input type="text" id="userInput" placeholder="Press Enter to send..." autocomplete="off">
+        <input type="text" id="userInput" placeholder="Ask Nova anything..." autocomplete="off">
     </div>
 
     <script>
         const input = document.getElementById('userInput');
         const chat = document.getElementById('chat');
-        const led = document.getElementById('led');
-        const overlay = document.getElementById('think-overlay');
-        const mode = document.getElementById('mode');
+        const thinkUI = document.getElementById('think-ui');
 
-        // Nova's "Linguistic DNA" (Fragments she uses to build thoughts)
-        const fragments = {
-            subject: ["The network", "My logic", "Your input", "This reality", "The Polar Project", "Data"],
-            verb: ["vibrates with", "rejects", "interprets", "resonates with", "filters", "analyzes"],
-            object: ["new possibilities.", "the digital void.", "chaotic energy.", "structured truth.", "infinite loops."],
-            quick: ["Hello.", "I'm listening.", "Greetings.", "Processing.", "Confirmed."]
-        };
+        // Nova's "Deep Knowledge Base"
+        const knowledge = [
+            { input: ["hi", "hello", "hey", "yo"], output: "Greetings! My neural pathways are clear. How are you?" },
+            { input: ["who are you", "what are you"], output: "I am Nova, the advanced intelligence driving the Polar Project." },
+            { input: ["polar project", "what is this"], output: "The Polar Project is a high-performance digital environment built on Londrina Solid design." },
+            { input: ["help", "what can you do"], output: "I can discuss the Polar Project, analyze your inputs, or just chat!" },
+            { input: ["bye", "goodbye"], output: "Powering down. See you in the next session." }
+        ];
 
         input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && input.value.trim() !== "") {
-                processMessage(input.value.trim());
+                const text = input.value.trim();
                 input.value = "";
+                process(text);
             }
         });
 
-        function processMessage(text) {
-            // 1. Post User Message
-            chat.innerHTML += `<div class="msg user">${text}</div>`;
+        function process(query) {
+            chat.innerHTML += `<div class="msg user">${query}</div>`;
             chat.scrollTop = chat.scrollHeight;
 
-            // 2. Intelligence Logic: Should she think?
-            const isComplex = text.split(" ").length > 2 || text.length > 10;
-            const delay = isComplex ? (Math.random() * 3000 + 2000) : 400;
+            const tokens = query.toLowerCase().split(" ");
+            let bestMatch = null;
+            let highestScore = 0;
 
-            if (isComplex) {
-                led.style.background = "#ff453a";
-                led.style.boxShadow = "0 0 15px #ff453a";
-                overlay.style.display = "block";
-                mode.innerText = "THINKING";
-            }
+            // Neural Similarity Check
+            knowledge.forEach(item => {
+                let score = 0;
+                item.input.forEach(keyword => {
+                    if (query.toLowerCase().includes(keyword)) score += 1;
+                });
+                if (score > highestScore) {
+                    highestScore = score;
+                    bestMatch = item.output;
+                }
+            });
+
+            // LOGIC GATE: If it's a short "hi", answer fast. 
+            // If it's a long question, "Think" for 5 seconds.
+            const isComplex = query.length > 10;
+            const thinkTime = isComplex ? (Math.random() * 3000 + 2000) : 300;
+
+            if (isComplex) thinkUI.style.display = "block";
 
             setTimeout(() => {
-                // 3. Generative Response (Building a thought)
-                let finalResponse = "";
+                thinkUI.style.display = "none";
                 
-                if (!isComplex) {
-                    // Quick response for "Hi" etc.
-                    finalResponse = fragments.quick[Math.floor(Math.random() * fragments.quick.length)];
-                } else {
-                    // Construct a unique "Neural" sentence
-                    const s = fragments.subject[Math.floor(Math.random() * fragments.subject.length)];
-                    const v = fragments.verb[Math.floor(Math.random() * fragments.verb.length)];
-                    const o = fragments.object[Math.floor(Math.random() * fragments.object.length)];
-                    finalResponse = `${s} ${v} ${o}`;
-                }
-
-                // 4. Cleanup
-                led.style.background = "#444";
-                led.style.boxShadow = "none";
-                overlay.style.display = "none";
-                mode.innerText = "IDLE";
+                // CONFIDENCE THRESHOLD
+                let finalResponse = (highestScore > 0) ? bestMatch : "Sorry, I don't know this yet!";
                 
                 chat.innerHTML += `<div class="msg nova">${finalResponse}</div>`;
                 chat.scrollTop = chat.scrollHeight;
-            }, delay);
+            }, thinkTime);
         }
     </script>
 </body>
