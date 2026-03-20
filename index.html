@@ -6,18 +6,21 @@
     <title>Polar Project</title> 
     
     <style>
+        /* 1. Correct Font Face Declaration */
         @font-face {
             font-family: 'BurbankCustom';
-            /* Pointing to your new .otf file */
+            /* Ensure this file is in the same folder as this HTML file */
             src: url('BurbankBigCondensed-Black.otf') format('opentype');
-            font-weight: black;
+            font-weight: 900; 
             font-style: normal;
+            font-display: swap; /* Helps text appear faster while font loads */
         }
 
+        /* 2. Entrance Animation */
         @keyframes fadeInUp {
             from {
                 opacity: 0;
-                transform: translateY(20px);
+                transform: translateY(30px);
             }
             to {
                 opacity: 1;
@@ -25,40 +28,58 @@
             }
         }
 
+        /* 3. Global Styles */
         body {
-            /* Applying the new Burbank font here */
-            font-family: 'BurbankCustom', sans-serif;
+            margin: 0;
+            padding: 0;
             background-color: #000;
             color: #fff;
-            padding: 50px;
+            font-family: 'BurbankCustom', sans-serif;
+            
+            /* Vertical and Horizontal Centering */
             display: flex;
-            flex-direction: column;
             justify-content: center;
-            height: 80vh;
-            overflow: hidden;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden; /* Prevents side-scrolling on mobile */
         }
 
         .container {
-            animation: fadeInUp 1s ease-out forwards;
+            text-align: center;
+            padding: 20px;
+            animation: fadeInUp 1.2s ease-out forwards;
         }
 
+        /* 4. Small Text Styling */
         .disclaimer {
-            font-size: 1.2rem;
+            font-family: sans-serif; /* Keep readable */
+            font-size: 1.1rem;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 3px;
             color: #ff453a;
-            margin-bottom: 5px;
-            /* Using standard sans-serif for the small text keeps it readable */
-            font-family: sans-serif; 
-            font-weight: bold;
+            margin-bottom: 10px;
         }
 
+        /* 5. Responsive Header Styling */
         h1 {
-            font-size: 8rem; /* Burbank looks better when it's HUGE */
+            /* clamp(minimum, preferred, maximum) */
+            font-size: clamp(3.5rem, 15vw, 9rem); 
             font-weight: 900;
             margin: 0;
             text-transform: uppercase;
-            line-height: 0.9;
+            line-height: 0.85;
+            letter-spacing: -2px;
+            /* Optional: subtle text shadow for depth */
+            text-shadow: 0px 10px 30px rgba(255, 255, 255, 0.1);
+        }
+
+        /* Optional: Mobile adjustment for the disclaimer */
+        @media (max-width: 600px) {
+            .disclaimer {
+                font-size: 0.9rem;
+                letter-spacing: 1.5px;
+            }
         }
     </style>
 </head>
@@ -66,7 +87,7 @@
 
     <div class="container">
         <div class="disclaimer">Welcome to</div>
-        <h1 id="site-name">Polar Project</h1>
+        <h1 id="site-name">Polar<br>Project</h1>
     </div>
 
 </body>
