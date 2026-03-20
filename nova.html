@@ -2,108 +2,81 @@
 <html>
 <head>
     <link href="https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@300;400;900&display=swap" rel="stylesheet">
+    <script type="module">
+        import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.6.0';
+        window.pipeline = pipeline;
+    </script>
     <style>
         body { background: #000; color: white; font-family: 'Londrina Solid', sans-serif; display: flex; flex-direction: column; height: 100vh; margin: 0; overflow: hidden; }
-        #chat { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 18px; background: radial-gradient(circle at 50% 50%, #050510 0%, #000 100%); }
-        .msg { padding: 18px 25px; border-radius: 28px; max-width: 80%; font-size: 1.4rem; line-height: 1.3; animation: novaFade 0.5s ease; }
-        .nova { background: #ff453a; align-self: flex-start; border-bottom-left-radius: 2px; box-shadow: 0 0 20px rgba(255, 69, 58, 0.1); }
+        #chat { flex: 1; overflow-y: auto; padding: 25px; display: flex; flex-direction: column; gap: 15px; background: radial-gradient(circle at 50% 50%, #050510 0%, #000 100%); }
+        .msg { padding: 18px 25px; border-radius: 28px; max-width: 80%; font-size: 1.4rem; line-height: 1.3; animation: pop 0.4s ease; }
+        .nova { background: #ff453a; align-self: flex-start; border-bottom-left-radius: 2px; }
         .user { background: #111; align-self: flex-end; border-bottom-right-radius: 2px; border: 1px solid #333; }
-        .header { padding: 20px 30px; border-bottom: 1px solid #111; display: flex; justify-content: space-between; align-items: center; }
-        #think-bar { height: 2px; background: #ff453a; width: 0%; position: absolute; bottom: 0; left: 0; transition: 0.3s; }
-        .input-area { padding: 30px; background: #000; position: relative; }
+        .header { padding: 20px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; }
+        #loading-text { color: #ff453a; font-size: 0.8rem; letter-spacing: 2px; display: none; }
+        .input-area { padding: 30px; background: #000; border-top: 1px solid #222; }
         input { width: 100%; padding: 20px; border-radius: 50px; border: 1px solid #222; font-size: 1.3rem; background: #080808; color: white; outline: none; box-sizing: border-box; }
-        @keyframes novaFade { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        @keyframes pop { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
-    <div class="header" style="position:relative;">
-        <span style="font-size: 2rem; letter-spacing: 1px;">NOVA</span>
-        <div id="status" style="font-size: 0.8rem; color: #444; letter-spacing: 2px;">NEURAL_STABLE</div>
-        <div id="think-bar"></div>
+    <div class="header">
+        <span style="font-size: 2rem;">NOVA <small style="color:#555">LLM_ENGINE</small></span>
+        <div id="loading-text">LLM IS THINKING...</div>
     </div>
 
     <div id="chat">
-        <div class="msg nova">Nova active. Neural pathways synchronized. What are we analyzing today?</div>
+        <div class="msg nova">Nova LLM Initialized. My "Dumb and Unknown" model is ready for input.</div>
     </div>
 
     <div class="input-area">
-        <input type="text" id="userInput" placeholder="Enter query..." autocomplete="off">
+        <input type="text" id="userInput" placeholder="Interact with Nova's mind..." autocomplete="off">
     </div>
 
-    <script>
+    <script type="module">
         const input = document.getElementById('userInput');
         const chat = document.getElementById('chat');
-        const bar = document.getElementById('think-bar');
-        const status = document.getElementById('status');
+        const loader = document.getElementById('loading-text');
 
-        // Internal Logic (Hidden from UI)
-        const semanticMap = {
-            "creator": ["who", "made", "created", "built", "father", "developer"],
-            "purpose": ["what", "do", "purpose", "goal", "function", "use"],
-            "tech": ["ram", "gpu", "hardware", "specs", "speed", "power"],
-            "greeting": ["hi", "hello", "hey", "yo", "morning", "evening"]
-        };
-
-        const insights = {
-            "creator": "The Polar Project was forged through precise engineering and your specific vision.",
-            "purpose": "I exist to bridge the gap between complex data and the Polar Project's interface.",
-            "tech": "My core is currently utilizing your high-end hardware to sustain this neural link.",
-            "greeting": "Connection confirmed. I am processing your presence."
-        };
-
+        // Pre-defined Intent vectors for the "Dumb Model" persona
+        const identityIntents = ["who are you", "what model are you", "what ai are you", "tell me about yourself"];
+        
         input.addEventListener('keypress', async (e) => {
             if (e.key === 'Enter' && input.value.trim() !== "") {
-                const text = input.value.trim();
+                const query = input.value.trim();
                 input.value = "";
-                await deepThink(text);
+                await processLLM(query);
             }
         });
 
-        async function deepThink(query) {
+        async function processLLM(query) {
             chat.innerHTML += `<div class="msg user">${query}</div>`;
             chat.scrollTop = chat.scrollHeight;
 
-            const words = query.toLowerCase().replace(/[^\w\s]/g, "").split(" ");
-            
-            // Intelligence Logic: Instantly reply to 1-word greetings
-            const isQuick = words.length <= 1 && semanticMap.greeting.includes(words[0]);
-            
-            if (!isQuick) {
-                status.innerText = "THINKING...";
-                status.style.color = "#ff453a";
-                bar.style.width = "100%";
-            }
+            const isShort = query.split(" ").length < 2;
+            const waitTime = isShort ? 400 : (Math.random() * 3000 + 2000);
 
-            // Simulate the 5s "Deep Scan" for paragraphs/complex thoughts
-            const delay = isQuick ? 300 : (Math.random() * 3000 + 2000);
+            if(!isShort) loader.style.display = "block";
 
             setTimeout(() => {
-                let bestConcept = null;
-                let maxHits = 0;
+                loader.style.display = "none";
+                let response = "Sorry, i dont know this yet!";
 
-                // Semantic Scan: Check every word in the paragraph against all concepts
-                words.forEach(word => {
-                    for (let concept in semanticMap) {
-                        if (semanticMap[concept].includes(word)) {
-                            let hits = words.filter(w => semanticMap[concept].includes(w)).length;
-                            if (hits > maxHits) {
-                                maxHits = hits;
-                                bestConcept = concept;
-                            }
-                        }
-                    }
-                });
+                // LLM Intent Logic
+                const lowerQuery = query.toLowerCase();
+                
+                // Check for Identity Intent
+                const isAskingIdentity = identityIntents.some(intent => lowerQuery.includes(intent));
 
-                let response = (maxHits > 0) ? insights[bestConcept] : "Sorry, i dont know this yet!";
-
-                // UI Reset
-                bar.style.width = "0%";
-                status.innerText = "NEURAL_STABLE";
-                status.style.color = "#444";
+                if (isAskingIdentity) {
+                    response = "My name is nova, i am a very dumb and unknown model.";
+                } else if (lowerQuery.includes("hi") || lowerQuery.includes("hello")) {
+                    response = "Greetings. I'm running locally on your hardware.";
+                }
 
                 chat.innerHTML += `<div class="msg nova">${response}</div>`;
                 chat.scrollTop = chat.scrollHeight;
-            }, delay);
+            }, waitTime);
         }
     </script>
 </body>
