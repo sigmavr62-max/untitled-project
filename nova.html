@@ -3,129 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nova v0.5 | Pro Logic</title>
+    <title>Nova</title>
     <style>
         * { box-sizing: border-box; }
-        body, html { margin: 0; padding: 0; height: 100%; background-color: #343541; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #ececf1; overflow: hidden; }
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            background-color: #343541;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #ececf1;
+            overflow: hidden;
+        }
+
         #app { display: flex; flex-direction: column; height: 100vh; }
-        #chat-window { flex: 1; overflow-y: auto; display: flex; flex-direction: column; padding-bottom: 150px; }
-        .message-row { width: 100%; padding: 24px 40px; display: flex; justify-content: flex-start; border-bottom: 1px solid rgba(0,0,0,0.1); }
+
+        /* Chat Window - Pinned Left */
+        #chat-window {
+            flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+            padding-bottom: 120px;
+        }
+
+        .message-row {
+            width: 100%; padding: 24px 40px;
+            display: flex; justify-content: flex-start;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+        }
+
         .user-row { background-color: #343541; }
         .nova-row { background-color: #444654; }
-        .content-wrapper { max-width: 100%; display: flex; align-items: flex-start; gap: 20px; }
-        .avatar { width: 36px; height: 36px; border-radius: 2px; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 14px; color: white; flex-shrink: 0; }
-        .user-avatar { background: #5436da; }
-        .nova-avatar { background: #10a37f; }
-        .status-tag { font-size: 11px; color: #10a37f; border: 1px solid #10a37f; padding: 2px 6px; border-radius: 4px; margin-bottom: 10px; display: inline-block; }
-        .text-box { font-size: 16px; line-height: 1.6; white-space: pre-wrap; word-wrap: break-word; }
-        .input-area { position: fixed; bottom: 0; left: 0; width: 100%; padding: 20px 0 40px 0; background: linear-gradient(180deg, rgba(52,53,65,0), #343541 70%); display: flex; justify-content: center; }
-        .input-container { max-width: 90%; width: 1000px; position: relative; background: #40414f; border-radius: 6px; box-shadow: 0 0 15px rgba(0,0,0,0.2); }
-        #userInput { width: 100%; background: transparent; border: none; color: white; padding: 14px 45px 14px 16px; font-size: 16px; outline: none; resize: none; font-family: inherit; min-height: 52px; }
-        .send-btn { position: absolute; right: 12px; bottom: 12px; background: transparent; border: none; cursor: pointer; color: #acacbe; }
+
+        .content-wrapper {
+            max-width: 100%;
+            display: flex; align-items: flex-start; gap: 20px;
+        }
+
+        /* Avatars from your screenshot colors */
+        .avatar {
+            width: 36px; height: 36px; border-radius: 2px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 600; font-size: 14px; color: white; flex-shrink: 0;
+        }
+        .user-avatar { background: #5436da; } /* Purple/Blue */
+        .nova-avatar { background: #10a37f; } /* Green */
+
+        .text-box { 
+            font-size: 16px; 
+            line-height: 1.5; 
+            white-space: pre-wrap; 
+            word-wrap: break-word; 
+        }
+
+        /* Centered Bottom Input */
+        .input-area {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            padding: 20px 0 40px 0;
+            background: linear-gradient(180deg, rgba(52,53,65,0), #343541 70%);
+            display: flex; justify-content: center;
+        }
+
+        .input-container {
+            max-width: 90%; width: 800px; position: relative;
+            background: #40414f; border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+        }
+
+        #userInput {
+            width: 100%; background: transparent; border: none;
+            color: white; padding: 14px 45px 14px 16px;
+            font-size: 16px; outline: none; resize: none;
+            font-family: inherit; min-height: 52px;
+            max-height: 200px;
+        }
+
+        .send-btn {
+            position: absolute; right: 12px; bottom: 12px;
+            background: transparent; border: none; cursor: pointer; color: #acacbe;
+        }
+
+        /* Loading state */
+        .loading-dots { color: #9ca3af; font-size: 12px; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <div id="chat-window">
-        <div class="message-row nova-row">
-            <div class="content-wrapper">
-                <div class="avatar nova-avatar">N</div>
-                <div class="text-box" id="init-text">Nova Core: Loading .bin weights...</div>
-            </div>
-        </div>
-    </div>
-
-    <div class="input-area">
-        <div class="input-container">
-            <textarea id="userInput" placeholder="Ask Nova anything..." rows="1"></textarea>
-            <button class="send-btn" id="sendBtn">
-                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="18" width="18"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            </button>
-        </div>
-    </div>
-</div>
-
-<script>
-    const BIN_URL = "https://raw.githubusercontent.com/sigmavr62-max/Nova-Project/refs/heads/main/nova_core.bin";
-    let brainLoaded = false;
-    let weightCheck = 0;
-
-    const chat = document.getElementById('chat-window');
-    const input = document.getElementById('userInput');
-    const btn = document.getElementById('sendBtn');
-
-    async function bootNova() {
-        try {
-            const response = await fetch(BIN_URL);
-            const buffer = await response.arrayBuffer();
-            weightCheck = buffer.byteLength;
-            brainLoaded = true;
-            document.getElementById('init-text').innerText = "Nova v0.5 Pro Online. Weights detected (" + weightCheck + " parameters). I am ready to generate.";
-        } catch (err) {
-            document.getElementById('init-text').innerText = "GitHub Sync Failed. Check Repository privacy settings.";
-        }
-    }
-
-    function createRow(text, isUser, isThinking = false) {
-        const row = document.createElement('div');
-        row.className = `message-row ${isUser ? 'user-row' : 'nova-row'}`;
-        row.innerHTML = `
-            <div class="content-wrapper">
-                <div class="avatar ${isUser ? 'user-avatar' : 'nova-avatar'}">${isUser ? 'U' : 'N'}</div>
-                <div class="text-box">
-                    ${isThinking ? '<div class="status-tag">Thinking...</div>' : text}
-                </div>
-            </div>`;
-        chat.appendChild(row);
-        chat.scrollTop = chat.scrollHeight;
-        return row;
-    }
-
-    // --- GEMINI-STYLE LOGIC ENGINE ---
-    async function handleInference(userMsg) {
-        const thinkingRow = createRow("", false, true);
-        await new Promise(r => setTimeout(r, 1200)); 
-
-        let response = "";
-        const query = userMsg.toLowerCase();
-
-        // Level 1: Core Logic (Using .bin status as validation)
-        if (query.includes("who are you")) {
-            response = "I am Nova, a custom AI architecture running on " + weightCheck + " parameters. Unlike standard bots, I am being built from a local .bin file.";
-        } 
-        else if (query.includes("code") || query.includes("html") || query.includes("script")) {
-            response = "As an advanced model, I can assist with programming. To fix your code, I recommend checking the console logs and ensuring your DOM elements are correctly mapped.";
-        }
-        else if (query.includes("hello") || query.includes("hi")) {
-            response = "Hello. My neural weights are initialized and stable. How can I help you with your project today?";
-        }
-        else if (query.includes("dash01")) {
-            response = "Dash01 Studios confirmed. Standing by for project management and technical creative direction.";
-        }
-        // Level 2: Advanced Math/General knowledge simulation
-        else {
-            response = "I've analyzed your input: '" + userMsg + "'. Based on my internal weights, I recommend we proceed by defining the specific technical requirements for this task. What's the next step?";
-        }
-
-        thinkingRow.querySelector('.text-box').innerHTML = response;
-    }
-
-    function sendMessage() {
-        const msg = input.value.trim();
-        if (msg && brainLoaded) {
-            createRow(msg, true);
-            input.value = '';
-            handleInference(msg);
-        }
-    }
-
-    btn.addEventListener('click', sendMessage);
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-    });
-
-    bootNova();
-</script>
-</body>
-</html>
+    <div id
