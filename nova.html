@@ -2,91 +2,88 @@
 <html>
 <head>
     <link href="https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@300;400;900&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/12.4.0/math.all.js"></script>
     <style>
         :root { --accent: #ff453a; --bg: #000; }
         body { background: var(--bg); color: white; font-family: 'Londrina Solid', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        
-        .header { padding: 20px 30px; border-bottom: 1px solid #111; display: flex; justify-content: space-between; align-items: center; background: #000; }
-        #status { font-size: 0.8rem; letter-spacing: 3px; color: #444; }
-        
-        #chat { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 20px; }
-        .msg { padding: 20px 25px; border-radius: 30px; max-width: 75%; font-size: 1.5rem; line-height: 1.2; animation: floatUp 0.4s ease; }
-        .nova { background: var(--accent); align-self: flex-start; border-bottom-left-radius: 2px; box-shadow: 0 10px 30px rgba(255, 69, 58, 0.1); }
+        .header { padding: 20px 30px; border-bottom: 1px solid #111; display: flex; justify-content: space-between; align-items: center; }
+        #status { font-size: 0.7rem; color: #444; letter-spacing: 2px; }
+        #chat { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 15px; }
+        .msg { padding: 18px 25px; border-radius: 25px; max-width: 80%; font-size: 1.4rem; line-height: 1.2; animation: pop 0.3s ease; }
+        .nova { background: var(--accent); align-self: flex-start; border-bottom-left-radius: 2px; }
         .user { background: #111; align-self: flex-end; border-bottom-right-radius: 2px; border: 1px solid #333; }
-
-        .input-area { padding: 30px; background: #000; border-top: 1px solid #111; }
-        input { width: 100%; padding: 22px; border-radius: 50px; border: 1px solid #222; background: #0a0a0a; color: white; font-size: 1.4rem; outline: none; transition: 0.3s; box-sizing: border-box; }
-        input:focus { border-color: var(--accent); }
-        
-        @keyframes floatUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .input-area { padding: 25px; background: #000; border-top: 1px solid #111; }
+        input { width: 100%; padding: 20px; border-radius: 50px; border: 1px solid #222; background: #080808; color: white; font-size: 1.3rem; outline: none; box-sizing: border-box; }
+        @keyframes pop { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
     </style>
 </head>
 <body>
     <div class="header">
-        <span style="font-size: 2.2rem;">NOVA <small style="color:#222">DUMB_MODEL_v5</small></span>
-        <div id="status">NEURAL_IDLE</div>
+        <span>NOVA <small style="color:#222">DICTIONARY_ENGINE</small></span>
+        <div id="status">SCANNING_IDLE</div>
     </div>
-
-    <div id="chat">
-        <div class="msg nova">I am a very dumb model, but I can try to help. What's up?</div>
-    </div>
-
-    <div class="input-area">
-        <input type="text" id="userInput" placeholder="Ask a question or a math problem..." autocomplete="off">
-    </div>
+    <div id="chat"><div class="msg nova">Meaning scanner active. I'm ready.</div></div>
+    <div class="input-area"><input type="text" id="userInput" placeholder="Ask Nova anything..." autocomplete="off"></div>
 
     <script>
         const chat = document.getElementById('chat');
         const input = document.getElementById('userInput');
         const status = document.getElementById('status');
 
+        // NOVA'S INTERNAL MEANING DICTIONARY
+        const dictionary = {
+            identity: {
+                matches: [/who/i, /nova/i, /name/i, /you/i, /what/i],
+                full: "My name is nova, i am a very dumb and unknown model.",
+                single: "Nova"
+            },
+            math: {
+                matches: [/[0-9]/, /\+/, /\-/, /\*/, /\//, /calculate/i],
+                single: "Computing"
+            },
+            greeting: {
+                matches: [/hi/i, /hello/i, /hey/i, /sup/i],
+                full: "Hi. I am currently running on your local hardware.",
+                single: "Hello"
+            }
+        };
+
         input.addEventListener('keypress', async (e) => {
             if (e.key === 'Enter' && input.value.trim() !== "") {
-                const query = input.value.trim();
+                const q = input.value.trim();
                 input.value = "";
-                await solve(query);
+                processQuery(q);
             }
         });
 
-        async function solve(query) {
+        function processQuery(query) {
             chat.innerHTML += `<div class="msg user">${query}</div>`;
             chat.scrollTop = chat.scrollHeight;
+            status.innerText = "SCANNING DICTIONARY...";
 
-            status.innerText = "PROCESSING...";
-            status.style.color = "#ff453a";
-
-            // 1. Give it that 3-5 second "Thinking" delay
             setTimeout(() => {
-                let response = "";
+                let finalResponse = "Sorry, i dont know this yet!";
+                let foundMatch = false;
 
-                // IDENTITY GATE
-                const identityTriggers = ["who are you", "what model", "what ai"];
-                const isIdentity = identityTriggers.some(t => query.toLowerCase().includes(t));
+                // Scan the dictionary for meanings
+                for (let category in dictionary) {
+                    const data = dictionary[category];
+                    const matchCount = data.matches.filter(regex => regex.test(query)).length;
 
-                if (isIdentity) {
-                    response = "My name is nova, i am a very dumb and unknown model.";
-                } else {
-                    // MATH GATE (The Calculator "API")
-                    try {
-                        // We use math.evaluate to see if the string contains a solvable equation
-                        const result = math.evaluate(query.replace(/[?]/g, ''));
-                        response = `I think the answer is ${result}... but I'm just a dumb model, so double check it.`;
-                    } catch (err) {
-                        // If it's not math, try general logic
-                        if (query.toLowerCase().includes("hi")) {
-                            response = "Hi. My circuits are currently stable.";
-                        } else {
-                            response = "Sorry, i dont know this yet!";
-                        }
+                    // If we find a strong match (2+ related words) or a specific trigger
+                    if (matchCount >= 1) {
+                        // Logic: If it's a short query, give the "One Word" answer. 
+                        // If it's a full sentence, give the "Full" answer.
+                        const isShort = query.split(" ").length <= 1;
+                        finalResponse = isShort ? data.single : (data.full || data.single);
+                        foundMatch = true;
+                        break;
                     }
                 }
 
-                status.innerText = "NEURAL_IDLE";
-                status.style.color = "#444";
-                chat.innerHTML += `<div class="msg nova">${response}</div>`;
+                status.innerText = "SCANNING_IDLE";
+                chat.innerHTML += `<div class="msg nova">${finalResponse}</div>`;
                 chat.scrollTop = chat.scrollHeight;
-            }, 3000); 
+            }, 800);
         }
     </script>
 </body>
