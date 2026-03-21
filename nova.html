@@ -2,114 +2,58 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nova v0.5 - Pro</title>
+    <title>Nova v0.5 - 16GB Pro Tier</title>
     <style>
         * { box-sizing: border-box; }
-        body, html {
-            margin: 0; padding: 0; height: 100%;
-            background-color: #343541;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            color: #ececf1;
-            overflow: hidden;
-        }
-
+        body { background: #343541; color: #ececf1; font-family: ui-sans-serif, system-ui, sans-serif; margin: 0; }
+        
         #app { display: flex; flex-direction: column; height: 100vh; }
+        #chat-window { flex: 1; overflow-y: auto; padding-bottom: 120px; }
 
-        /* Chat Window */
-        #chat-window {
-            flex: 1; overflow-y: auto; display: flex; flex-direction: column;
-            padding-bottom: 100px;
-        }
+        .message-row { width: 100%; padding: 32px 40px; display: flex; justify-content: flex-start; border-bottom: 1px solid rgba(0,0,0,0.1); }
+        .user-row { background: #343541; }
+        .nova-row { background: #444654; }
 
-        .message-row {
-            width: 100%; padding: 24px 40px;
-            display: flex; justify-content: flex-start;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-        }
-
-        .user-row { background-color: #343541; }
-        .nova-row { background-color: #444654; }
-
-        .content-wrapper {
-            max-width: 100%;
-            display: flex; align-items: flex-start; gap: 20px;
-        }
-
-        /* Avatars */
-        .avatar {
-            width: 36px; height: 36px; border-radius: 2px;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 600; font-size: 14px; color: white; flex-shrink: 0;
-        }
+        .content { display: flex; gap: 24px; max-width: 100%; width: 100%; }
+        .avatar { width: 36px; height: 36px; border-radius: 2px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-weight: bold; }
         .user-avatar { background: #5436da; }
         .nova-avatar { background: #10a37f; }
 
-        /* Thinking Indicator */
-        .thinking {
-            font-size: 13px; color: #9ca3af; margin-bottom: 8px;
-            display: flex; align-items: center; gap: 8px;
-        }
-        .dot { 
-            width: 4px; height: 4px; background: #9ca3af; border-radius: 50%; 
-            animation: pulse 1.5s infinite ease-in-out;
-        }
-        @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
-
-        .text-box { 
-            font-size: 16px; line-height: 1.6; 
-            word-wrap: break-word; white-space: pre-wrap;
+        /* THINKING BLOCK - From the Gary Explains video */
+        .thought-process {
+            background: rgba(0,0,0,0.2);
+            border-left: 3px solid #10a37f;
+            padding: 12px 16px;
+            margin-bottom: 15px;
+            font-family: monospace;
+            font-size: 13px;
+            color: #9ca3af;
+            border-radius: 4px;
         }
 
-        /* Modern Input Area */
-        .input-area {
-            position: fixed; bottom: 0; left: 0; width: 100%;
-            padding: 20px 0 40px 0;
-            background: linear-gradient(180deg, rgba(52,53,65,0), #343541 70%);
-            display: flex; justify-content: center;
-        }
+        .final-text { font-size: 16px; line-height: 1.6; white-space: pre-wrap; }
 
-        .input-container {
-            max-width: 90%; width: 1000px; position: relative;
-            background: #40414f; border-radius: 6px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.2);
-        }
-
-        #userInput {
-            width: 100%; background: transparent; border: none;
-            color: white; padding: 14px 45px 14px 16px;
-            font-size: 16px; outline: none; resize: none;
-            font-family: inherit; min-height: 52px;
-            max-height: 200px;
-        }
-
-        .send-btn {
-            position: absolute; right: 12px; bottom: 12px;
-            background: transparent; border: none; cursor: pointer;
-            color: #acacbe;
-        }
+        /* Modern Input */
+        .input-box { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); width: 800px; max-width: 90%; background: #40414f; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.3); display: flex; padding: 8px; }
+        #userInput { flex: 1; background: transparent; border: none; color: white; padding: 12px; font-size: 16px; outline: none; resize: none; max-height: 200px; }
+        #sendBtn { background: #10a37f; border: none; border-radius: 4px; color: white; padding: 0 16px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="app">
     <div id="chat-window">
-        <!-- Initial Message -->
         <div class="message-row nova-row">
-            <div class="content-wrapper">
+            <div class="content">
                 <div class="avatar nova-avatar">N</div>
-                <div class="text-box">Nova v0.5 Pro Online. Advanced thinking systems active. How can I assist?</div>
+                <div class="final-text">Nova 16GB Logic Core Active. I am now capable of Chain-of-Thought reasoning. How shall we proceed?</div>
             </div>
         </div>
     </div>
 
-    <div class="input-area">
-        <div class="input-container">
-            <textarea id="userInput" placeholder="Ask Nova anything..." rows="1"></textarea>
-            <button class="send-btn" id="sendBtn">
-                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="18" width="18"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-            </button>
-        </div>
+    <div class="input-box">
+        <textarea id="userInput" placeholder="Send a message..." rows="1"></textarea>
+        <button id="sendBtn">Send</button>
     </div>
 </div>
 
@@ -118,72 +62,66 @@
     const input = document.getElementById('userInput');
     const btn = document.getElementById('sendBtn');
 
-    function createRow(text, isUser, isThinking = false) {
+    function addRow(isUser, thought = "", text = "") {
         const row = document.createElement('div');
         row.className = `message-row ${isUser ? 'user-row' : 'nova-row'}`;
-        row.id = isThinking ? "thinking-row" : "";
         
-        row.innerHTML = `
-            <div class="content-wrapper">
-                <div class="avatar ${isUser ? 'user-avatar' : 'nova-avatar'}">${isUser ? 'U' : 'N'}</div>
-                <div class="text-box">
-                    ${isThinking ? '<div class="thinking"><div class="dot"></div> Nova is thinking...</div>' : text}
-                </div>
+        let inner = `<div class="content">
+            <div class="avatar ${isUser ? 'user-avatar' : 'nova-avatar'}">${isUser ? 'U' : 'N'}</div>
+            <div style="flex:1">
+                ${thought ? `<div class="thought-process">${thought}</div>` : ''}
+                <div class="final-text">${text}</div>
             </div>
-        `;
+        </div>`;
+        
+        row.innerHTML = inner;
         chat.appendChild(row);
         chat.scrollTop = chat.scrollHeight;
         return row;
     }
 
-    async function handleAdvancedLogic(userMsg) {
-        // 1. Create the Thinking Row
-        const thinkingRow = createRow("", false, true);
-        const query = userMsg.toLowerCase();
+    async function processLogic(userText) {
+        // Start "Thinking"
+        const row = addRow(false, "Initializing 16GB Reasoning Core...<br>> Analyzing tokens<br>> Checking history/facts database", "");
+        const tBox = row.querySelector('.thought-process');
+        const fBox = row.querySelector('.final-text');
 
-        // 2. Simulate "Advanced Thinking" steps
-        await new Promise(r => setTimeout(r, 800)); // Analysing tokens...
+        // Step 1: Thinking Simulation
+        await new Promise(r => setTimeout(r, 1200));
+        tBox.innerHTML += "<br>> Intent: Creative/Technical Analysis<br>> Strategy: Multi-step verification";
         
-        let finalAnswer = "";
+        // Step 2: Final Answer Generation
+        setTimeout(() => {
+            let response = "";
+            const msg = userText.toLowerCase();
 
-        // 3. Pro Context-Aware Engine
-        if (query.includes("chargogg")) {
-            finalAnswer = "I've analyzed your spelling. You're referring to the 49-letter version of Lake Chaubunagungamaug. My logic core ensures that long strings don't break the UI containment.";
-        } else if (query.includes("dash01") || query.includes("studio")) {
-            finalAnswer = "Advanced Thinking: Prioritizing Dash01 Studios creative architecture. I've noted the 1.5TB storage target for project assets.";
-        } else if (query.includes("pro") || query.includes("advanced")) {
-            finalAnswer = "The Pro system is now active. I am using a multi-step inference chain to verify my answers before displaying them to you.";
-        } else {
-            finalAnswer = "Context received. I am processing your request through my advanced logic layer. How should we proceed with this development task?";
-        }
+            if(msg.includes("code") || msg.includes("python")) {
+                response = "Since I am in 16GB mode, I can handle complex code logic. I suggest a modular approach for the Dash01 automation scripts.";
+            } else if(msg.includes("history") || msg.includes("who")) {
+                response = "16GB Logic: Accessing factual database. My knowledge base now includes historical events and complex world facts.";
+            } else {
+                response = "Reasoning complete. My internal weights suggest a balanced technical response is best for this prompt.";
+            }
 
-        // 4. Replace Thinking with Final Answer
-        thinkingRow.querySelector('.text-box').innerHTML = finalAnswer;
+            fBox.innerText = response;
+        }, 800);
     }
 
-    function sendMessage() {
-        const msg = input.value.trim();
-        if (msg) {
-            createRow(msg, true);
-            input.value = '';
-            handleAdvancedLogic(msg);
-        }
-    }
-
-    btn.addEventListener('click', sendMessage);
-    input.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
+    btn.addEventListener('click', () => {
+        const val = input.value.trim();
+        if(val) {
+            addRow(true, "", val);
+            input.value = "";
+            processLogic(val);
         }
     });
 
-    // Auto-resize textarea
-    input.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
+    input.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            btn.click();
+        }
     });
 </script>
-
 </body>
 </html>
