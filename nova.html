@@ -16,7 +16,7 @@
 
         #app { display: flex; flex-direction: column; height: 100vh; }
 
-        /* Progress Bar for the 16GB Core */
+        /* Loader Bar for .bin progress */
         #loader-bar {
             position: fixed; top: 0; left: 0; height: 3px;
             width: 0%; background: #10a37f; transition: width 0.3s; z-index: 999;
@@ -66,6 +66,7 @@
             color: white; padding: 14px 45px 14px 16px;
             font-size: 16px; outline: none; resize: none;
             font-family: inherit; min-height: 52px;
+            max-height: 200px;
         }
 
         .send-btn {
@@ -83,7 +84,7 @@
         <div class="message-row nova-row">
             <div class="content-wrapper">
                 <div class="avatar nova-avatar">N</div>
-                <div class="text-box" id="status-text">Nova Core is waking up...</div>
+                <div class="text-box" id="status-text">Waking up Nova... Syncing with GitHub.</div>
             </div>
         </div>
     </div>
@@ -107,11 +108,11 @@
     
     let isReady = false;
 
-    // Load weights with a progress bar so the screen isn't just grey
+    // Load weights in the background
     async function loadNova() {
         try {
             const response = await fetch(BIN_URL);
-            if (!response.ok) throw new Error("GitHub Link Broken");
+            if (!response.ok) throw new Error("GitHub link is broken.");
 
             const reader = response.body.getReader();
             const contentLength = +response.headers.get('Content-Length');
@@ -130,7 +131,7 @@
             bar.style.display = "none";
             document.getElementById('status-text').innerText = "Yo. Weights loaded. I'm ready.";
         } catch (e) {
-            document.getElementById('status-text').innerText = "Error: Check your Raw GitHub link.";
+            document.getElementById('status-text').innerText = "Error: Check your Raw GitHub link or CORS policy.";
             console.error(e);
         }
     }
@@ -143,25 +144,62 @@
         chat.scrollTop = chat.scrollHeight;
     }
 
+    async function handleReply(msg) {
+        const lower = msg.toLowerCase().trim();
+        let response = "";
+
+        // Randomized Human Response Lists
+        const fillers = [
+            "For sure. What's the next part of the plan?",
+            "I'm following. What else you got?",
+            "Copy that. Should we tweak the code or move on?",
+            "Alright, I'm locked in. What's the move?",
+            "Makes sense. You want me to look into anything else?",
+            "Standard. Let's keep it pushing."
+        ];
+
+        const farewells = [
+            "Alright, catch you later.",
+            "Peace. I'll be here if you need more work done.",
+            "Later. Don't forget to save the progress.",
+            "Safe travels. See ya."
+        ];
+
+        // Specific Keyword Logic
+        if (lower.includes("yo") || lower.includes("hi") || lower.includes("hello")) {
+            response = "Yo! What's the move?";
+        } 
+        else if (lower.includes("who are you")) {
+            response = "I'm Nova. Running on that custom .bin logic.";
+        } 
+        else if (lower.includes("bye") || lower.includes("go now") || lower.includes("later")) {
+            response = farewells[Math.floor(Math.random() * farewells.length)];
+        }
+        else if (lower.includes("dash01")) {
+            response = "Dash01 Studios is locked in. What are we drafting?";
+        }
+        else {
+            response = fillers[Math.floor(Math.random() * fillers.length)];
+        }
+
+        // Slight delay to feel like she's typing
+        setTimeout(() => {
+            createRow(response, false);
+        }, 600);
+    }
+
     function handleSend() {
         const val = input.value.trim();
-        if (!val) return;
+        if (!val || !isReady) return;
         
         createRow(val, true);
         input.value = "";
-
-        setTimeout(() => {
-            let res = "Got it. What's next?";
-            if (val.toLowerCase().includes("yo")) res = "Yo! What's the move?";
-            if (val.toLowerCase().includes("who")) res = "I'm Nova. Just a custom build.";
-            createRow(res, false);
-        }, 400);
+        handleReply(val);
     }
 
     btn.onclick = handleSend;
     input.onkeydown = (e) => { if(e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }};
 
-    // Run the load in the background so the UI doesn't stay grey
     loadNova();
 </script>
 </body>
