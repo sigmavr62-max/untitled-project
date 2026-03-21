@@ -16,7 +16,12 @@
 
         #app { display: flex; flex-direction: column; height: 100vh; }
 
-        /* Chat Window - Pinned Left */
+        /* Progress Bar for the 16GB Core */
+        #loader-bar {
+            position: fixed; top: 0; left: 0; height: 3px;
+            width: 0%; background: #10a37f; transition: width 0.3s; z-index: 999;
+        }
+
         #chat-window {
             flex: 1; overflow-y: auto; display: flex; flex-direction: column;
             padding-bottom: 120px;
@@ -31,28 +36,18 @@
         .user-row { background-color: #343541; }
         .nova-row { background-color: #444654; }
 
-        .content-wrapper {
-            max-width: 100%;
-            display: flex; align-items: flex-start; gap: 20px;
-        }
+        .content-wrapper { display: flex; align-items: flex-start; gap: 20px; width: 100%; }
 
-        /* Avatars from your screenshot colors */
         .avatar {
             width: 36px; height: 36px; border-radius: 2px;
             display: flex; align-items: center; justify-content: center;
             font-weight: 600; font-size: 14px; color: white; flex-shrink: 0;
         }
-        .user-avatar { background: #5436da; } /* Purple/Blue */
-        .nova-avatar { background: #10a37f; } /* Green */
+        .user-avatar { background: #5436da; }
+        .nova-avatar { background: #10a37f; }
 
-        .text-box { 
-            font-size: 16px; 
-            line-height: 1.5; 
-            white-space: pre-wrap; 
-            word-wrap: break-word; 
-        }
+        .text-box { font-size: 16px; line-height: 1.5; white-space: pre-wrap; word-wrap: break-word; }
 
-        /* Centered Bottom Input */
         .input-area {
             position: fixed; bottom: 0; left: 0; width: 100%;
             padding: 20px 0 40px 0;
@@ -71,19 +66,103 @@
             color: white; padding: 14px 45px 14px 16px;
             font-size: 16px; outline: none; resize: none;
             font-family: inherit; min-height: 52px;
-            max-height: 200px;
         }
 
         .send-btn {
             position: absolute; right: 12px; bottom: 12px;
             background: transparent; border: none; cursor: pointer; color: #acacbe;
         }
-
-        /* Loading state */
-        .loading-dots { color: #9ca3af; font-size: 12px; }
     </style>
 </head>
 <body>
 
+<div id="loader-bar"></div>
+
 <div id="app">
-    <div id
+    <div id="chat-window">
+        <div class="message-row nova-row">
+            <div class="content-wrapper">
+                <div class="avatar nova-avatar">N</div>
+                <div class="text-box" id="status-text">Nova Core is waking up...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="input-area">
+        <div class="input-container">
+            <textarea id="userInput" placeholder="Send a message..." rows="1"></textarea>
+            <button class="send-btn" id="sendBtn">
+                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="18" width="18"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const BIN_URL = "https://raw.githubusercontent.com/sigmavr62-max/Nova-Project/refs/heads/main/nova_core.bin";
+    const chat = document.getElementById('chat-window');
+    const input = document.getElementById('userInput');
+    const btn = document.getElementById('sendBtn');
+    const bar = document.getElementById('loader-bar');
+    
+    let isReady = false;
+
+    // Load weights with a progress bar so the screen isn't just grey
+    async function loadNova() {
+        try {
+            const response = await fetch(BIN_URL);
+            if (!response.ok) throw new Error("GitHub Link Broken");
+
+            const reader = response.body.getReader();
+            const contentLength = +response.headers.get('Content-Length');
+            
+            let receivedLength = 0;
+            while(true) {
+                const {done, value} = await reader.read();
+                if (done) break;
+                receivedLength += value.length;
+                if (contentLength) {
+                    bar.style.width = (receivedLength / contentLength * 100) + "%";
+                }
+            }
+
+            isReady = true;
+            bar.style.display = "none";
+            document.getElementById('status-text').innerText = "Yo. Weights loaded. I'm ready.";
+        } catch (e) {
+            document.getElementById('status-text').innerText = "Error: Check your Raw GitHub link.";
+            console.error(e);
+        }
+    }
+
+    function createRow(text, isUser) {
+        const row = document.createElement('div');
+        row.className = `message-row ${isUser ? 'user-row' : 'nova-row'}`;
+        row.innerHTML = `<div class="content-wrapper"><div class="avatar ${isUser ? 'user-avatar' : 'nova-avatar'}">${isUser ? 'U' : 'N'}</div><div class="text-box">${text}</div></div>`;
+        chat.appendChild(row);
+        chat.scrollTop = chat.scrollHeight;
+    }
+
+    function handleSend() {
+        const val = input.value.trim();
+        if (!val) return;
+        
+        createRow(val, true);
+        input.value = "";
+
+        setTimeout(() => {
+            let res = "Got it. What's next?";
+            if (val.toLowerCase().includes("yo")) res = "Yo! What's the move?";
+            if (val.toLowerCase().includes("who")) res = "I'm Nova. Just a custom build.";
+            createRow(res, false);
+        }, 400);
+    }
+
+    btn.onclick = handleSend;
+    input.onkeydown = (e) => { if(e.key === "Enter" && !e.shiftKey) { e.preventDefault(); handleSend(); }};
+
+    // Run the load in the background so the UI doesn't stay grey
+    loadNova();
+</script>
+</body>
+</html>
