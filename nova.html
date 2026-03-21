@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nova</title>
+    <title>Nova v0.5 - Pro</title>
     <style>
         * { box-sizing: border-box; }
         body, html {
@@ -11,17 +11,20 @@
             background-color: #343541;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: #ececf1;
+            overflow: hidden;
         }
 
         #app { display: flex; flex-direction: column; height: 100vh; }
 
+        /* Chat Window */
         #chat-window {
             flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+            padding-bottom: 100px;
         }
 
         .message-row {
-            width: 100%; padding: 24px 40px; /* Increased side padding for edge breathing room */
-            display: flex; justify-content: flex-start; /* Aligns the wrapper to the left */
+            width: 100%; padding: 24px 40px;
+            display: flex; justify-content: flex-start;
             border-bottom: 1px solid rgba(0,0,0,0.1);
         }
 
@@ -29,10 +32,11 @@
         .nova-row { background-color: #444654; }
 
         .content-wrapper {
-            max-width: 100%; /* Allows text to use the full width */
+            max-width: 100%;
             display: flex; align-items: flex-start; gap: 20px;
         }
 
+        /* Avatars */
         .avatar {
             width: 36px; height: 36px; border-radius: 2px;
             display: flex; align-items: center; justify-content: center;
@@ -41,22 +45,32 @@
         .user-avatar { background: #5436da; }
         .nova-avatar { background: #10a37f; }
 
+        /* Thinking Indicator */
+        .thinking {
+            font-size: 13px; color: #9ca3af; margin-bottom: 8px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .dot { 
+            width: 4px; height: 4px; background: #9ca3af; border-radius: 50%; 
+            animation: pulse 1.5s infinite ease-in-out;
+        }
+        @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 1; } }
+
         .text-box { 
-            font-size: 16px; 
-            line-height: 1.6; 
-            word-wrap: break-word; 
-            white-space: pre-wrap; /* Preserves spacing and line breaks */
+            font-size: 16px; line-height: 1.6; 
+            word-wrap: break-word; white-space: pre-wrap;
         }
 
-        /* Input Area remains centered for usability, or I can move it too if you like */
+        /* Modern Input Area */
         .input-area {
+            position: fixed; bottom: 0; left: 0; width: 100%;
             padding: 20px 0 40px 0;
-            background: linear-gradient(180deg, rgba(52,53,65,0), #343541 50%);
+            background: linear-gradient(180deg, rgba(52,53,65,0), #343541 70%);
             display: flex; justify-content: center;
         }
 
         .input-container {
-            max-width: 90%; width: 1200px; position: relative;
+            max-width: 90%; width: 1000px; position: relative;
             background: #40414f; border-radius: 6px;
             box-shadow: 0 0 15px rgba(0,0,0,0.2);
         }
@@ -66,6 +80,7 @@
             color: white; padding: 14px 45px 14px 16px;
             font-size: 16px; outline: none; resize: none;
             font-family: inherit; min-height: 52px;
+            max-height: 200px;
         }
 
         .send-btn {
@@ -79,17 +94,18 @@
 
 <div id="app">
     <div id="chat-window">
+        <!-- Initial Message -->
         <div class="message-row nova-row">
             <div class="content-wrapper">
                 <div class="avatar nova-avatar">N</div>
-                <div class="text-box">Layout updated. All text streams are now pinned to the left margin. How does this look for NovaV0.5?</div>
+                <div class="text-box">Nova v0.5 Pro Online. Advanced thinking systems active. How can I assist?</div>
             </div>
         </div>
     </div>
 
     <div class="input-area">
         <div class="input-container">
-            <textarea id="userInput" placeholder="Send a message..." rows="1"></textarea>
+            <textarea id="userInput" placeholder="Ask Nova anything..." rows="1"></textarea>
             <button class="send-btn" id="sendBtn">
                 <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="18" width="18"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
             </button>
@@ -102,17 +118,47 @@
     const input = document.getElementById('userInput');
     const btn = document.getElementById('sendBtn');
 
-    function createRow(text, isUser) {
+    function createRow(text, isUser, isThinking = false) {
         const row = document.createElement('div');
         row.className = `message-row ${isUser ? 'user-row' : 'nova-row'}`;
+        row.id = isThinking ? "thinking-row" : "";
+        
         row.innerHTML = `
             <div class="content-wrapper">
                 <div class="avatar ${isUser ? 'user-avatar' : 'nova-avatar'}">${isUser ? 'U' : 'N'}</div>
-                <div class="text-box">${text}</div>
+                <div class="text-box">
+                    ${isThinking ? '<div class="thinking"><div class="dot"></div> Nova is thinking...</div>' : text}
+                </div>
             </div>
         `;
         chat.appendChild(row);
         chat.scrollTop = chat.scrollHeight;
+        return row;
+    }
+
+    async function handleAdvancedLogic(userMsg) {
+        // 1. Create the Thinking Row
+        const thinkingRow = createRow("", false, true);
+        const query = userMsg.toLowerCase();
+
+        // 2. Simulate "Advanced Thinking" steps
+        await new Promise(r => setTimeout(r, 800)); // Analysing tokens...
+        
+        let finalAnswer = "";
+
+        // 3. Pro Context-Aware Engine
+        if (query.includes("chargogg")) {
+            finalAnswer = "I've analyzed your spelling. You're referring to the 49-letter version of Lake Chaubunagungamaug. My logic core ensures that long strings don't break the UI containment.";
+        } else if (query.includes("dash01") || query.includes("studio")) {
+            finalAnswer = "Advanced Thinking: Prioritizing Dash01 Studios creative architecture. I've noted the 1.5TB storage target for project assets.";
+        } else if (query.includes("pro") || query.includes("advanced")) {
+            finalAnswer = "The Pro system is now active. I am using a multi-step inference chain to verify my answers before displaying them to you.";
+        } else {
+            finalAnswer = "Context received. I am processing your request through my advanced logic layer. How should we proceed with this development task?";
+        }
+
+        // 4. Replace Thinking with Final Answer
+        thinkingRow.querySelector('.text-box').innerHTML = finalAnswer;
     }
 
     function sendMessage() {
@@ -120,9 +166,7 @@
         if (msg) {
             createRow(msg, true);
             input.value = '';
-            setTimeout(() => {
-                createRow("I am standing by for your next command.", false);
-            }, 500);
+            handleAdvancedLogic(msg);
         }
     }
 
@@ -132,6 +176,12 @@
             e.preventDefault();
             sendMessage();
         }
+    });
+
+    // Auto-resize textarea
+    input.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
     });
 </script>
 
