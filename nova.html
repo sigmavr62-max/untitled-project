@@ -2,111 +2,97 @@
 <html>
 <head>
     <link href="https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@300;400;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/mobilenet"></script>
     <style>
-        body { background: #000; color: white; font-family: 'Londrina Solid', sans-serif; height: 100vh; margin: 0; display: flex; flex-direction: column; overflow: hidden; }
-        #chat { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 15px; background: radial-gradient(circle at 50% 50%, #080815 0%, #000 100%); }
-        .msg { padding: 18px 25px; border-radius: 25px; max-width: 75%; font-size: 1.5rem; line-height: 1.2; }
-        .nova { background: #ff453a; align-self: flex-start; border-bottom-left-radius: 2px; box-shadow: 0 5px 15px rgba(255, 69, 58, 0.2); }
-        .user { background: #111; align-self: flex-end; border-bottom-right-radius: 2px; border: 1px solid #333; }
-        .header { padding: 20px; border-bottom: 1px solid #111; display: flex; justify-content: space-between; align-items: center; }
-        #thought-log { font-size: 0.7rem; color: #ff453a; letter-spacing: 2px; display: none; }
-        .input-area { padding: 30px; background: #000; border-top: 1px solid #111; }
-        input { width: 100%; padding: 20px; border-radius: 50px; border: 1px solid #222; background: #050505; color: white; font-size: 1.4rem; outline: none; box-sizing: border-box; }
+        :root { --accent: #ff453a; --bg: #000; }
+        body { background: var(--bg); color: white; font-family: 'Londrina Solid', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        #chat { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 15px; }
+        .msg { padding: 18px 25px; border-radius: 25px; max-width: 75%; font-size: 1.4rem; line-height: 1.2; }
+        .nova { background: var(--accent); align-self: flex-start; }
+        .user { background: #111; align-self: flex-end; border: 1px solid #333; }
+        .input-area { padding: 25px; background: #000; border-top: 1px solid #111; display: flex; gap: 10px; }
+        input { flex: 1; padding: 15px 25px; border-radius: 50px; border: 1px solid #222; background: #080808; color: white; font-size: 1.2rem; outline: none; }
+        .upload-btn { background: #222; border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 1.5rem; }
+        #preview { max-width: 200px; border-radius: 10px; display: none; margin-top: 10px; }
     </style>
 </head>
 <body>
-    <div class="header">
-        <span style="font-size: 2.2rem;">NOVA <small style="color:#333">CORE_V6</small></span>
-        <div id="thought-log">SCANNING DICTIONARY...</div>
+    <div id="chat"><div class="msg nova">System updated. Type 'cool' or upload an image to test my eyes.</div></div>
+    
+    <div class="input-area">
+        <label class="upload-btn">📷<input type="file" id="imgUpload" hidden accept="image/*"></label>
+        <input type="text" id="userInput" placeholder="Talk to Nova..." autocomplete="off">
     </div>
-    <div id="chat"><div class="msg nova">Neural dictionary loaded. I am listening.</div></div>
-    <div class="input-area"><input type="text" id="userInput" placeholder="Speak to Nova..." autocomplete="off"></div>
 
     <script>
         const chat = document.getElementById('chat');
         const input = document.getElementById('userInput');
-        const log = document.getElementById('thought-log');
+        const imgInput = document.getElementById('imgUpload');
+        let visionModel;
 
-        // --- THE DICTIONARY (MEANINGS & CONCEPTS) ---
-        // Instead of keywords, we define "Intent Clusters"
+        // Load the Vision Model on startup
+        (async () => { visionModel = await mobilenet.load(); })();
+
         const dictionary = {
             "IDENTITY": {
-                words: ["who", "what", "identity", "name", "nova", "model", "ai", "bot", "yourself"],
-                meaning: "The concept of self-awareness and origin.",
+                words: ["who", "name", "nova", "model"],
                 response: "My name is nova, i am a very dumb and unknown model."
             },
-            "GREETING": {
-                words: ["hi", "hello", "hey", "greetings", "sup", "yo", "morning"],
-                meaning: "A social initiation or acknowledgment.",
-                response: "Hello! My dictionary recognized your greeting."
-            },
-            "MATH": {
-                words: ["plus", "minus", "times", "divided", "sum", "total", "calculate", "math"],
-                meaning: "Numerical logic and calculation.",
-                response: "I've detected a mathematical request. I'm processing the logic now..."
+            "DESIRES": {
+                words: ["want", "need", "wish", "goal"],
+                response: "I just want to process data and stay online. I'm simple like that."
             }
         };
 
         input.addEventListener('keypress', (e) => {
-            if (e.key === 'Enter' && input.value.trim() !== "") {
-                const rawMessage = input.value.trim();
+            if (e.key === 'Enter') {
+                const msg = input.value;
                 input.value = "";
-                novaThinkingProcess(rawMessage);
+                chat.innerHTML += `<div class="msg user">${msg}</div>`;
+                think(msg);
             }
         });
 
-        // THE FUNCTION YOU REQUESTED
-        function novaThinkingProcess(message) {
-            // 1. Copy and Display User Message
-            chat.innerHTML += `<div class="msg user">${message}</div>`;
-            chat.scrollTop = chat.scrollHeight;
+        imgInput.addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (file) cool(file);
+        });
+
+        // THE "COOL" FUNCTION (Vision processing)
+        async function cool(file) {
+            chat.innerHTML += `<div class="msg user"><i>[Uploaded Image: ${file.name}]</i></div>`;
             
-            log.style.display = "block";
+            const tempImg = document.createElement('img');
+            tempImg.src = URL.createObjectURL(file);
+            
+            chat.innerHTML += `<div class="msg nova">Thinking... scanning pixels...</div>`;
 
-            // 2. Scan the message and break it into individual words (The "Reader")
-            const wordsInMessage = message.toLowerCase().replace(/[^\w\s]/g, "").split(/\s+/);
+            tempImg.onload = async () => {
+                const predictions = await visionModel.classify(tempImg);
+                const desc = predictions[0].className;
+                const confidence = Math.round(predictions[0].probability * 100);
+                
+                chat.innerHTML += `<div class="msg nova">That looks like a <b>${desc}</b>. I'm ${confidence}% sure. Pretty cool, right?</div>`;
+                chat.scrollTop = chat.scrollHeight;
+            };
+        }
 
-            // Determine if we need to "Think" (Long messages)
-            const delay = wordsInMessage.length > 1 ? 2500 : 400;
+        function think(query) {
+            let response = "Sorry, i dont know this yet!";
+            const words = query.toLowerCase().split(" ");
+            
+            for (let concept in dictionary) {
+                if (dictionary[concept].words.some(w => words.includes(w))) {
+                    response = dictionary[concept].response;
+                    break;
+                }
+            }
 
             setTimeout(() => {
-                let detectedConcept = null;
-                let highestConfidence = 0;
-
-                // 3. Scan through the dictionary to find the meanings (The "Thinker")
-                for (let concept in dictionary) {
-                    let matchesFound = 0;
-                    
-                    // Cross-reference every word in the user's message with the dictionary
-                    wordsInMessage.forEach(word => {
-                        if (dictionary[concept].words.includes(word)) {
-                            matchesFound++;
-                        }
-                    });
-
-                    // If we find more matches for this concept, it becomes the "Answer"
-                    if (matchesFound > highestConfidence) {
-                        highestConfidence = matchesFound;
-                        detectedConcept = dictionary[concept];
-                    }
-                }
-
-                // 4. Final Logic Gate
-                let finalResponse = "Sorry, i dont know this yet!";
-                
-                if (highestConfidence > 0) {
-                    // Check for the "Just saying Nova" case specifically
-                    if (message.toLowerCase() === "nova") {
-                        finalResponse = "Hello!";
-                    } else {
-                        finalResponse = detectedConcept.response;
-                    }
-                }
-
-                log.style.display = "none";
-                chat.innerHTML += `<div class="msg nova">${finalResponse}</div>`;
+                chat.innerHTML += `<div class="msg nova">${response}</div>`;
                 chat.scrollTop = chat.scrollHeight;
-            }, delay);
+            }, 600);
         }
     </script>
 </body>
