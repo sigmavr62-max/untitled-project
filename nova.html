@@ -5,155 +5,133 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Nova</title>
     <style>
+        * { box-sizing: border-box; }
         body, html {
             margin: 0; padding: 0; height: 100%;
-            background-color: #343541; /* Classic GPT Dark Gray */
-            font-family: 'Sentry', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: #343541; /* Dark Gray base */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: #ececf1;
         }
 
-        #app { display: flex; height: 100vh; width: 100%; }
+        #app { display: flex; flex-direction: column; height: 100vh; }
 
-        /* Sidebar - Clean & Simple */
-        #sidebar {
-            width: 260px; background-color: #202123;
-            padding: 10px; display: flex; flex-direction: column;
-            border-right: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .new-chat {
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 5px; padding: 12px;
-            font-size: 14px; cursor: pointer;
-            transition: background 0.2s;
-            margin-bottom: 20px;
-        }
-        .new-chat:hover { background: rgba(255,255,255,0.1); }
-
-        /* Main Chat Area */
-        #main-container {
-            flex: 1; display: flex; flex-direction: column;
-            position: relative; overflow: hidden;
-        }
-
+        /* Chat Window with Row-based structure */
         #chat-window {
             flex: 1; overflow-y: auto; display: flex; flex-direction: column;
         }
 
-        /* Message Rows */
         .message-row {
-            padding: 24px 0; width: 100%;
+            width: 100%; padding: 24px 0;
             display: flex; justify-content: center;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
         }
+
+        /* Alternating Row Colors like your screenshot */
         .user-row { background-color: #343541; }
-        .nova-row { background-color: #444654; } /* Contrast row like old GPT */
+        .nova-row { background-color: #444654; }
 
-        .message-content {
-            max-width: 650px; width: 90%;
-            display: flex; gap: 20px; font-size: 16px; line-height: 1.5;
+        .content-wrapper {
+            max-width: 800px; width: 90%;
+            display: flex; align-items: flex-start; gap: 20px;
         }
 
+        /* Avatars */
         .avatar {
-            width: 30px; height: 30px; border-radius: 2px;
+            width: 32px; height: 32px; border-radius: 2px;
             display: flex; align-items: center; justify-content: center;
-            font-weight: bold; flex-shrink: 0;
+            font-weight: 600; font-size: 14px; color: white; flex-shrink: 0;
         }
-        .user-avatar { background: #5436da; }
-        .nova-avatar { background: #10a37f; }
+        .user-avatar { background: #5436da; } /* Purple/Blue */
+        .nova-avatar { background: #10a37f; } /* Green */
 
-        /* Input Area */
-        .input-container {
+        .text-box { font-size: 16px; line-height: 1.6; word-wrap: break-word; }
+
+        /* Modern Centered Input */
+        .input-area {
             padding: 20px 0 40px 0;
             background: linear-gradient(180deg, rgba(52,53,65,0), #343541 50%);
             display: flex; justify-content: center;
         }
 
-        .input-box {
-            max-width: 650px; width: 90%; position: relative;
-            background: #40414f; border-radius: 5px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        .input-container {
+            max-width: 800px; width: 90%; position: relative;
+            background: #40414f; border-radius: 6px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
         }
 
-        #userText {
+        #userInput {
             width: 100%; background: transparent; border: none;
-            color: white; padding: 14px 45px 14px 15px;
-            font-size: 16px; outline: none; box-sizing: border-box;
-            resize: none; font-family: inherit;
+            color: white; padding: 14px 45px 14px 16px;
+            font-size: 16px; outline: none; resize: none;
+            font-family: inherit; min-height: 52px;
         }
 
         .send-btn {
-            position: absolute; right: 10px; bottom: 10px;
+            position: absolute; right: 12px; bottom: 12px;
             background: transparent; border: none; cursor: pointer;
-            color: #acacbe;
+            color: #acacbe; transition: color 0.2s;
         }
+        .send-btn:hover { color: white; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <div id="sidebar">
-        <div class="new-chat">+ New Chat</div>
-    </div>
-
-    <div id="main-container">
-        <div id="chat-window">
-            <!-- Messages appear here -->
-            <div class="message-row nova-row">
-                <div class="message-content">
-                    <div class="avatar nova-avatar">N</div>
-                    <div>Hello. I am Nova. How can I help you today?</div>
-                </div>
+    <div id="chat-window">
+        <div class="message-row nova-row">
+            <div class="content-wrapper">
+                <div class="avatar nova-avatar">N</div>
+                <div class="text-box">Nova systems active. I have moved into the new UI layout. How can we proceed?</div>
             </div>
         </div>
+    </div>
 
+    <div class="input-area">
         <div class="input-container">
-            <div class="input-box">
-                <textarea id="userText" rows="1" placeholder="Send a message..."></textarea>
-                <button class="send-btn" id="sendBtn">
-                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="1em" width="1em"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
-                </button>
-            </div>
+            <textarea id="userInput" placeholder="Send a message..." rows="1"></textarea>
+            <button class="send-btn" id="sendBtn">
+                <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="18" width="18"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </button>
         </div>
     </div>
 </div>
 
 <script>
-    const chatWindow = document.getElementById('chat-window');
-    const input = document.getElementById('userText');
+    const chat = document.getElementById('chat-window');
+    const input = document.getElementById('userInput');
     const btn = document.getElementById('sendBtn');
 
-    function addMessage(text, isUser) {
+    function createRow(text, isUser) {
         const row = document.createElement('div');
         row.className = `message-row ${isUser ? 'user-row' : 'nova-row'}`;
-        
         row.innerHTML = `
-            <div class="message-content">
+            <div class="content-wrapper">
                 <div class="avatar ${isUser ? 'user-avatar' : 'nova-avatar'}">${isUser ? 'U' : 'N'}</div>
-                <div>${text}</div>
+                <div class="text-box">${text}</div>
             </div>
         `;
-        
-        chatWindow.appendChild(row);
-        chatWindow.scrollTop = chatWindow.scrollHeight;
+        chat.appendChild(row);
+        chat.scrollTop = chat.scrollHeight;
     }
 
-    function handleSend() {
-        const text = input.value.trim();
-        if (text) {
-            addMessage(text, true);
+    function sendMessage() {
+        const msg = input.value.trim();
+        if (msg) {
+            createRow(msg, true);
             input.value = '';
-            // Temporary placeholder response
+            
+            // Simulation of "thinking"
             setTimeout(() => {
-                addMessage("I am ready for your instructions. What is our first step?", false);
+                createRow("Awaiting your next instruction for NovaV0.5.", false);
             }, 600);
         }
     }
 
-    btn.addEventListener('click', handleSend);
-    input.addEventListener('keypress', (e) => {
+    btn.addEventListener('click', sendMessage);
+    input.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            handleSend();
+            sendMessage();
         }
     });
 </script>
