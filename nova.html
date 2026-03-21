@@ -3,165 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nova Neural Core v0.5</title>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500;800&display=swap" rel="stylesheet">
+    <title>Nova</title>
     <style>
-        :root { 
-            --bg: #030305; --panel: #0a0a0c; --accent: #007aff; 
-            --text: #d1d1d6; --font: 'JetBrains Mono', monospace; 
-            --wip: #f59e0b;
+        body, html {
+            margin: 0; padding: 0; height: 100%;
+            background-color: #343541; /* Classic GPT Dark Gray */
+            font-family: 'Sentry', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            color: #ececf1;
         }
 
-        body { 
-            background: var(--bg); color: var(--text); font-family: var(--font); 
-            margin: 0; display: flex; height: 100vh; overflow: hidden; 
+        #app { display: flex; height: 100vh; width: 100%; }
+
+        /* Sidebar - Clean & Simple */
+        #sidebar {
+            width: 260px; background-color: #202123;
+            padding: 10px; display: flex; flex-direction: column;
+            border-right: 1px solid rgba(255,255,255,0.1);
         }
 
-        /* Sidebar: Neural Memory Viewer */
-        #sidebar { 
-            width: 340px; background: var(--panel); border-right: 1px solid #1a1a1e; 
-            display: flex; flex-direction: column; padding: 25px; 
+        .new-chat {
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 5px; padding: 12px;
+            font-size: 14px; cursor: pointer;
+            transition: background 0.2s;
+            margin-bottom: 20px;
         }
-        .section-label { font-size: 0.7rem; color: #444; font-weight: 800; margin-bottom: 15px; letter-spacing: 2px; }
-        .log-entry { font-size: 0.65rem; color: #666; padding: 8px 0; border-bottom: 1px solid #151518; overflow: hidden; white-space: nowrap; }
+        .new-chat:hover { background: rgba(255,255,255,0.1); }
 
-        /* Main Interface */
-        #main { flex: 1; display: flex; flex-direction: column; position: relative; }
-        
-        header { 
-            padding: 20px 40px; border-bottom: 1px solid #1a1a1e; 
-            display: flex; justify-content: space-between; align-items: center;
-            background: rgba(3, 3, 5, 0.8); backdrop-filter: blur(10px);
-        }
-        .badge { background: #1c1c1e; border: 1px solid #333; padding: 4px 10px; border-radius: 4px; font-size: 0.7rem; }
-
-        #chat-flow { flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; gap: 24px; }
-        
-        .bubble { padding: 16px 22px; border-radius: 4px; max-width: 80%; line-height: 1.6; font-size: 0.95rem; border: 1px solid transparent; }
-        .nova { background: rgba(0, 122, 255, 0.05); align-self: flex-start; border-color: #222; color: var(--accent); }
-        .user { background: #111; align-self: flex-end; border-color: #333; }
-
-        /* Input Zone: Gated Image Function */
-        .input-zone { 
-            padding: 30px 40px; background: #000; border-top: 1px solid #1a1a1e; 
-            display: flex; flex-direction: column; gap: 10px; 
-        }
-        .wip-tag { color: var(--wip); font-size: 0.7rem; font-weight: 800; }
-        
-        .input-row { display: flex; gap: 15px; align-items: center; }
-        #userInput { 
-            flex: 1; background: #080808; border: 1px solid #222; 
-            padding: 16px; color: #fff; outline: none; font-family: var(--font); 
-            font-size: 1rem; border-radius: 4px;
-        }
-        #userInput:focus { border-color: var(--accent); }
-        
-        .btn-disabled { 
-            background: #111; border: 1px solid #222; color: #444; 
-            padding: 12px 20px; border-radius: 4px; cursor: not-allowed; 
-            font-family: var(--font); font-size: 0.8rem;
+        /* Main Chat Area */
+        #main-container {
+            flex: 1; display: flex; flex-direction: column;
+            position: relative; overflow: hidden;
         }
 
-        /* Scanline FX */
-        body::after { content: " "; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 2px, 3px 100%; pointer-events: none; z-index: 1000; }
+        #chat-window {
+            flex: 1; overflow-y: auto; display: flex; flex-direction: column;
+        }
+
+        /* Message Rows */
+        .message-row {
+            padding: 24px 0; width: 100%;
+            display: flex; justify-content: center;
+        }
+        .user-row { background-color: #343541; }
+        .nova-row { background-color: #444654; } /* Contrast row like old GPT */
+
+        .message-content {
+            max-width: 650px; width: 90%;
+            display: flex; gap: 20px; font-size: 16px; line-height: 1.5;
+        }
+
+        .avatar {
+            width: 30px; height: 30px; border-radius: 2px;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: bold; flex-shrink: 0;
+        }
+        .user-avatar { background: #5436da; }
+        .nova-avatar { background: #10a37f; }
+
+        /* Input Area */
+        .input-container {
+            padding: 20px 0 40px 0;
+            background: linear-gradient(180deg, rgba(52,53,65,0), #343541 50%);
+            display: flex; justify-content: center;
+        }
+
+        .input-box {
+            max-width: 650px; width: 90%; position: relative;
+            background: #40414f; border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+        }
+
+        #userText {
+            width: 100%; background: transparent; border: none;
+            color: white; padding: 14px 45px 14px 15px;
+            font-size: 16px; outline: none; box-sizing: border-box;
+            resize: none; font-family: inherit;
+        }
+
+        .send-btn {
+            position: absolute; right: 10px; bottom: 10px;
+            background: transparent; border: none; cursor: pointer;
+            color: #acacbe;
+        }
     </style>
 </head>
 <body>
 
-<div id="sidebar">
-    <div class="section-label">NEURAL_WEIGHTS</div>
-    <div id="weights-view">
-        <div class="log-entry">CONTEXT_DASH01: 0.00</div>
-        <div class="log-entry">CONTEXT_POLAR:  0.00</div>
-        <div class="log-entry">CONTEXT_STUDIO: 0.00</div>
-    </div>
-    <div class="section-label" style="margin-top:40px;">MEMORY_INDEX (1.5TB)</div>
-    <div id="memory-list"></div>
-</div>
-
-<div id="main">
-    <header>
-        <div style="font-weight: 800; letter-spacing: -1px;">NOVA_CORE<span style="color:var(--accent)">.V0.5</span></div>
-        <div class="badge">78_TOKENS_SEC / QUANTIZED_4BIT</div>
-    </header>
-
-    <div id="chat-flow">
-        <div class="bubble nova">SYSTEMS ONLINE. <br><br>I am a quantized logic model. Vision functions are currently detached for performance optimization. How shall we proceed with Dash01 development?</div>
+<div id="app">
+    <div id="sidebar">
+        <div class="new-chat">+ New Chat</div>
     </div>
 
-    <div class="input-zone">
-        <div class="wip-tag">[!] VISION_CORE: OFFLINE (GATED_WIP)</div>
-        <div class="input-row">
-            <button class="btn-disabled">SRC_LOAD</button>
-            <input type="text" id="userInput" placeholder="root@nova:~# type command..." autocomplete="off">
+    <div id="main-container">
+        <div id="chat-window">
+            <!-- Messages appear here -->
+            <div class="message-row nova-row">
+                <div class="message-content">
+                    <div class="avatar nova-avatar">N</div>
+                    <div>Hello. I am Nova. How can I help you today?</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="input-container">
+            <div class="input-box">
+                <textarea id="userText" rows="1" placeholder="Send a message..."></textarea>
+                <button class="send-btn" id="sendBtn">
+                    <svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" height="1em" width="1em"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                </button>
+            </div>
         </div>
     </div>
 </div>
 
 <script>
-    const chat = document.getElementById('chat-flow');
-    const input = document.getElementById('userInput');
-    const weightsView = document.getElementById('weights-view');
-    const memoryList = document.getElementById('memory-list');
+    const chatWindow = document.getElementById('chat-window');
+    const input = document.getElementById('userText');
+    const btn = document.getElementById('sendBtn');
 
-    // --- NOVA_V0.5 QUANTIZED LOGIC ---
-    let sessionWeights = { dash: 0, ai: 0, tech: 0 };
-    let chatHistory = [];
-
-    // Simple Tokenizer (Simulating GPT-2 style from video)
-    function tokenize(text) {
-        return text.toLowerCase().split(/\s+/);
-    }
-
-    function updateNeuralWeights(tokens) {
-        tokens.forEach(t => {
-            if (t.includes("dash") || t.includes("studio") || t.includes("polar")) sessionWeights.dash += 0.15;
-            if (t.includes("gpt") || t.includes("ai") || t.includes("nova") || t.includes("v0.5")) sessionWeights.ai += 0.15;
-            if (t.includes("ram") || t.includes("tb") || t.includes("hardware")) sessionWeights.tech += 0.15;
-        });
-
-        // Update Sidebar View
-        weightsView.innerHTML = `
-            <div class="log-entry" style="color:var(--accent)">DASH01_BIAS: ${sessionWeights.dash.toFixed(2)}</div>
-            <div class="log-entry">NEURAL_BIAS: ${sessionWeights.ai.toFixed(2)}</div>
-            <div class="log-entry">HARDWARE_BIAS: ${sessionWeights.tech.toFixed(2)}</div>
-        `;
-    }
-
-    function generateProbabilityResponse(text) {
-        const tokens = tokenize(text);
-        updateNeuralWeights(tokens);
-
-        // Simulated "High Speed" response based on weights
-        if (sessionWeights.dash > 0.8) return "Analyzing Dash01 Studio assets. My weights are leaning toward branding and creative studio logic.";
-        if (sessionWeights.ai > 0.8) return "Neural architecture detected. GPT-style tokenization and quantization protocols active.";
-        if (text.toLowerCase().includes("v0.5")) return "NovaV0.5 is optimized for CPU-only inference at high token speeds.";
+    function addMessage(text, isUser) {
+        const row = document.createElement('div');
+        row.className = `message-row ${isUser ? 'user-row' : 'nova-row'}`;
         
-        return "Command acknowledged. Weights updated in neural cache.";
+        row.innerHTML = `
+            <div class="message-content">
+                <div class="avatar ${isUser ? 'user-avatar' : 'nova-avatar'}">${isUser ? 'U' : 'N'}</div>
+                <div>${text}</div>
+            </div>
+        `;
+        
+        chatWindow.appendChild(row);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
     }
 
-    input.addEventListener('keypress', (e) => {
-        if(e.key === 'Enter' && input.value.trim()) {
-            const m = input.value;
-            input.value = "";
-            chat.innerHTML += `<div class="bubble user">${m}</div>`;
-            
-            // Log to memory
-            const memEntry = document.createElement('div');
-            memEntry.className = "log-entry";
-            memEntry.innerText = `> ${m.substring(0, 30)}...`;
-            memoryList.prepend(memEntry);
-
-            // Simulation of 78 tokens/sec from video [00:04:56]
-            const responseTime = Math.random() * 400 + 200; 
-
+    function handleSend() {
+        const text = input.value.trim();
+        if (text) {
+            addMessage(text, true);
+            input.value = '';
+            // Temporary placeholder response
             setTimeout(() => {
-                const response = generateProbabilityResponse(m);
-                chat.innerHTML += `<div class="bubble nova">${response}</div>`;
-                chat.scrollTop = chat.scrollHeight;
-            }, responseTime);
+                addMessage("I am ready for your instructions. What is our first step?", false);
+            }, 600);
+        }
+    }
+
+    btn.addEventListener('click', handleSend);
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            handleSend();
         }
     });
 </script>
+
 </body>
 </html>
