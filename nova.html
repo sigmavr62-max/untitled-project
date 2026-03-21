@@ -2,73 +2,102 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Nova Neural Training Core</title>
+    <title>Nova Neural Core</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;500&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
     <style>
-        :root { --bg: #050505; --accent: #007aff; --panel: #121214; --text: #ffffff; }
-        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; display: flex; height: 100vh; }
+        :root { --bg: #08080a; --accent: #007aff; --panel: #141417; --text: #e1e1e6; --font: 'JetBrains Mono', monospace; }
+        body { background: var(--bg); color: var(--text); font-family: var(--font); margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
-        /* Training Sidebar */
-        #training-bay { width: 350px; background: var(--panel); border-right: 1px solid #222; display: flex; flex-direction: column; padding: 20px; overflow-y: auto; }
-        .memory-card { background: #1c1c1e; border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #333; font-size: 0.85rem; }
-        .memory-card img { width: 100%; border-radius: 6px; margin-bottom: 10px; }
+        #sidebar { width: 380px; background: var(--panel); border-right: 1px solid #28282b; display: flex; flex-direction: column; padding: 20px; box-shadow: 10px 0 30px rgba(0,0,0,0.5); }
+        .memory-card { background: #1c1c21; border-radius: 8px; padding: 12px; margin-bottom: 15px; border: 1px solid #333; font-size: 0.75rem; animation: slideIn 0.3s ease; }
+        .memory-card img { width: 100%; border-radius: 4px; margin-bottom: 8px; opacity: 0.8; }
         
-        /* Main Chat */
-        #viewport { flex: 1; display: flex; flex-direction: column; }
-        #chat-area { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
-        .bubble { padding: 15px 20px; border-radius: 18px; max-width: 75%; line-height: 1.5; }
-        .nova { background: var(--panel); align-self: flex-start; border: 1px solid #222; }
-        .user { background: var(--accent); align-self: flex-end; }
+        #viewport { flex: 1; display: flex; flex-direction: column; background: radial-gradient(circle at top right, #101014, #08080a); }
+        #chat-flow { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
+        .bubble { padding: 14px 20px; border-radius: 12px; max-width: 80%; line-height: 1.6; font-size: 0.95rem; }
+        .nova { background: rgba(255,255,255,0.05); align-self: flex-start; border: 1px solid #333; }
+        .user { background: var(--accent); align-self: flex-end; color: white; box-shadow: 0 4px 15px rgba(0,122,255,0.3); }
 
-        .input-wrap { padding: 30px; background: var(--bg); border-top: 1px solid #222; display: flex; gap: 15px; }
-        #userInput { flex: 1; background: #1c1c1e; border: 1px solid #333; border-radius: 25px; padding: 15px 20px; color: white; outline: none; }
-        .btn { background: var(--panel); border: 1px solid #333; color: white; padding: 10px 20px; border-radius: 20px; cursor: pointer; }
+        .input-zone { padding: 30px; background: rgba(0,0,0,0.4); border-top: 1px solid #28282b; display: flex; gap: 15px; backdrop-filter: blur(10px); }
+        #userInput { flex: 1; background: #000; border: 1px solid #333; border-radius: 8px; padding: 15px; color: #00ff41; outline: none; font-family: var(--font); }
+        .btn { background: #222; border: 1px solid #444; color: white; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-family: var(--font); font-size: 0.8rem; }
+        .btn:hover { background: var(--accent); border-color: var(--accent); }
+
+        @keyframes slideIn { from { opacity: 0; transform: translateX(-20px); } to { opacity: 1; transform: translateX(0); } }
     </style>
 </head>
 <body>
 
-<div id="training-bay">
-    <h2 style="color: var(--accent)">Neural Training Bay</h2>
-    <p style="font-size: 0.8rem; color: #666">Long-term visual memory (IndexedDB)</p>
-    <div id="memory-vessel"></div>
+<div id="sidebar">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h3 style="margin:0; font-size:1rem; color:var(--accent);">NEURAL_STORAGE</h3>
+        <span id="mem-count" style="font-size:0.7rem; opacity:0.5;">0 ASSETS</span>
+    </div>
+    <div id="memory-vessel" style="overflow-y:auto; flex:1;"></div>
 </div>
 
 <div id="viewport">
-    <div id="chat-area">
-        <div class="bubble nova">Training Core Online. Upload assets to teach my neural pathways.</div>
+    <div id="chat-flow">
+        <div class="bubble nova">Systems check... Memory optimized. Ready for input.</div>
     </div>
-    <div class="input-wrap">
+    <div class="input-zone">
         <input type="file" id="fileIn" hidden accept="image/*">
-        <button class="btn" onclick="document.getElementById('fileIn').click()">Upload Asset</button>
-        <input type="text" id="userInput" placeholder="Teach me about this image...">
+        <button class="btn" onclick="document.getElementById('fileIn').click()">SRC_LOAD</button>
+        <input type="text" id="userInput" placeholder="root@nova:~# type message...">
     </div>
 </div>
 
 <script>
     const vessel = document.getElementById('memory-vessel');
-    const chat = document.getElementById('chat-area');
+    const chat = document.getElementById('chat-flow');
     const fileIn = document.getElementById('fileIn');
     const input = document.getElementById('userInput');
 
-    // --- DATABASE ENGINE (IndexedDB) ---
     let db;
-    const dbReq = indexedDB.open("NovaVision", 1);
-    dbReq.onupgradeneeded = (e) => {
+    let pendingImgData = null;
+
+    // --- INDEXED_DB INIT ---
+    const req = indexedDB.open("NovaNeural", 2);
+    req.onupgradeneeded = (e) => {
         db = e.target.result;
-        db.createObjectStore("vision_memory", { keyPath: "id", autoIncrement: true });
+        if(!db.objectStoreNames.contains("vision")) {
+            db.createObjectStore("vision", { keyPath: "hash" });
+        }
     };
-    dbReq.onsuccess = (e) => { db = e.target.result; syncMemory(); };
+    req.onsuccess = (e) => { db = e.target.result; syncMemory(); };
 
-    // --- TRAINING LOGIC ---
-    let pendingImage = null;
+    // --- DUPLICATE PREVENTION & FINGERPRINTING ---
+    async function getHash(dataUrl) {
+        const msgUint8 = new TextEncoder().encode(dataUrl);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+        return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    }
 
-    fileIn.onchange = (e) => {
+    fileIn.onchange = async (e) => {
         const file = e.target.files[0];
+        if(!file) return;
+
         const reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onload = (ev) => {
-            pendingImage = ev.target.result;
-            addMessage('nova', "Image received. Tell me: **What does this image actually mean?**");
+        reader.onload = async (ev) => {
+            const dataUrl = ev.target.result;
+            const hash = await getHash(dataUrl);
+            
+            // Check if exists
+            const tx = db.transaction("vision", "readonly");
+            const store = tx.objectStore("vision");
+            const check = store.get(hash);
+
+            check.onsuccess = () => {
+                if(check.result) {
+                    addMsg('nova', `IDENTIFIED: [${file.name}]. This is a known asset: **${check.result.meaning}**`);
+                    pendingImgData = null;
+                } else {
+                    pendingImgData = { data: dataUrl, hash: hash, name: file.name };
+                    addMsg('nova', `NEW_DATA_DETECTED. Requesting classification: What does this image represent?`);
+                }
+            };
         };
     };
 
@@ -76,57 +105,53 @@
         if(e.key === 'Enter' && input.value.trim()) {
             const val = input.value;
             input.value = "";
-            addMessage('user', val);
+            addMsg('user', val);
             
-            if(pendingImage) {
-                trainNova(pendingImage, val);
+            if(pendingImgData) {
+                saveMemory(pendingImgData, val);
             } else {
-                addMessage('nova', "Processing thought...");
+                addMsg('nova', `EXECUTING: "${val}"... (Local response logic here)`);
             }
         }
     };
 
-    async function trainNova(imgData, meaning) {
-        // Deep OCR Scan for automated tagging
-        const ocr = await Tesseract.recognize(imgData, 'eng');
-        const textFound = ocr.data.text.trim();
-
+    async function saveMemory(imgObj, meaning) {
+        addMsg('nova', `PROCESSED. Writing to neural sector...`);
+        const ocr = await Tesseract.recognize(imgObj.data, 'eng');
+        
         const entry = {
-            image: imgData,
+            hash: imgObj.hash,
+            image: imgObj.data,
             meaning: meaning,
-            ocr_text: textFound,
-            timestamp: Date.now()
+            ocr: ocr.data.text.trim(),
+            date: new Date().toLocaleString()
         };
 
-        const tx = db.transaction("vision_memory", "readwrite");
-        tx.objectStore("vision_memory").add(entry);
+        const tx = db.transaction("vision", "readwrite");
+        tx.objectStore("vision").put(entry);
         tx.oncomplete = () => {
-            pendingImage = null;
-            addMessage('nova', `Neural pathway updated. I now understand this image means: "${meaning}"`);
+            pendingImgData = null;
             syncMemory();
         };
     }
 
     function syncMemory() {
         vessel.innerHTML = "";
-        const tx = db.transaction("vision_memory", "readonly");
-        tx.objectStore("vision_memory").openCursor(null, 'prev').onsuccess = (e) => {
+        const tx = db.transaction("vision", "readonly");
+        tx.objectStore("vision").openCursor().onsuccess = (e) => {
             const cursor = e.target.result;
             if(cursor) {
                 const card = document.createElement('div');
                 card.className = "memory-card";
-                card.innerHTML = `
-                    <img src="${cursor.value.image}">
-                    <b>Meaning:</b> ${cursor.value.meaning}<br>
-                    <b>AI Read:</b> "${cursor.value.ocr_text.substring(0,30)}..."
-                `;
+                card.innerHTML = `<img src="${cursor.value.image}"><b>TYPE:</b> ${cursor.value.meaning}<br><b>OCR:</b> ${cursor.value.ocr.substring(0,20)}...`;
                 vessel.appendChild(card);
                 cursor.continue();
             }
+            document.getElementById('mem-count').innerText = `${vessel.children.length} ASSETS`;
         };
     }
 
-    function addMessage(who, text) {
+    function addMsg(who, text) {
         const b = document.createElement('div');
         b.className = `bubble ${who}`;
         b.innerHTML = text;
