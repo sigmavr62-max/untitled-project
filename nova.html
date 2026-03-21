@@ -8,45 +8,47 @@
         * { box-sizing: border-box; }
         body, html {
             margin: 0; padding: 0; height: 100%;
-            background-color: #343541; /* Dark Gray base */
+            background-color: #343541;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             color: #ececf1;
         }
 
         #app { display: flex; flex-direction: column; height: 100vh; }
 
-        /* Chat Window with Row-based structure */
         #chat-window {
             flex: 1; overflow-y: auto; display: flex; flex-direction: column;
         }
 
         .message-row {
-            width: 100%; padding: 24px 0;
-            display: flex; justify-content: center;
+            width: 100%; padding: 24px 40px; /* Increased side padding for edge breathing room */
+            display: flex; justify-content: flex-start; /* Aligns the wrapper to the left */
             border-bottom: 1px solid rgba(0,0,0,0.1);
         }
 
-        /* Alternating Row Colors like your screenshot */
         .user-row { background-color: #343541; }
         .nova-row { background-color: #444654; }
 
         .content-wrapper {
-            max-width: 800px; width: 90%;
+            max-width: 100%; /* Allows text to use the full width */
             display: flex; align-items: flex-start; gap: 20px;
         }
 
-        /* Avatars */
         .avatar {
-            width: 32px; height: 32px; border-radius: 2px;
+            width: 36px; height: 36px; border-radius: 2px;
             display: flex; align-items: center; justify-content: center;
             font-weight: 600; font-size: 14px; color: white; flex-shrink: 0;
         }
-        .user-avatar { background: #5436da; } /* Purple/Blue */
-        .nova-avatar { background: #10a37f; } /* Green */
+        .user-avatar { background: #5436da; }
+        .nova-avatar { background: #10a37f; }
 
-        .text-box { font-size: 16px; line-height: 1.6; word-wrap: break-word; }
+        .text-box { 
+            font-size: 16px; 
+            line-height: 1.6; 
+            word-wrap: break-word; 
+            white-space: pre-wrap; /* Preserves spacing and line breaks */
+        }
 
-        /* Modern Centered Input */
+        /* Input Area remains centered for usability, or I can move it too if you like */
         .input-area {
             padding: 20px 0 40px 0;
             background: linear-gradient(180deg, rgba(52,53,65,0), #343541 50%);
@@ -54,7 +56,7 @@
         }
 
         .input-container {
-            max-width: 800px; width: 90%; position: relative;
+            max-width: 90%; width: 1200px; position: relative;
             background: #40414f; border-radius: 6px;
             box-shadow: 0 0 15px rgba(0,0,0,0.2);
         }
@@ -69,9 +71,8 @@
         .send-btn {
             position: absolute; right: 12px; bottom: 12px;
             background: transparent; border: none; cursor: pointer;
-            color: #acacbe; transition: color 0.2s;
+            color: #acacbe;
         }
-        .send-btn:hover { color: white; }
     </style>
 </head>
 <body>
@@ -81,7 +82,7 @@
         <div class="message-row nova-row">
             <div class="content-wrapper">
                 <div class="avatar nova-avatar">N</div>
-                <div class="text-box">Nova systems active. I have moved into the new UI layout. How can we proceed?</div>
+                <div class="text-box">Layout updated. All text streams are now pinned to the left margin. How does this look for NovaV0.5?</div>
             </div>
         </div>
     </div>
@@ -119,11 +120,9 @@
         if (msg) {
             createRow(msg, true);
             input.value = '';
-            
-            // Simulation of "thinking"
             setTimeout(() => {
-                createRow("Awaiting your next instruction for NovaV0.5.", false);
-            }, 600);
+                createRow("I am standing by for your next command.", false);
+            }, 500);
         }
     }
 
