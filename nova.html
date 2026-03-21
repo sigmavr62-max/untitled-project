@@ -3,87 +3,110 @@
 <head>
     <link href="https://fonts.googleapis.com/css2?family=Londrina+Solid:wght@300;400;900&display=swap" rel="stylesheet">
     <style>
-        :root { --accent: #ff453a; --bg: #000; }
-        body { background: var(--bg); color: white; font-family: 'Londrina Solid', sans-serif; margin: 0; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-        .header { padding: 20px 30px; border-bottom: 1px solid #111; display: flex; justify-content: space-between; align-items: center; }
-        #status { font-size: 0.7rem; color: #444; letter-spacing: 2px; }
-        #chat { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 15px; }
-        .msg { padding: 18px 25px; border-radius: 25px; max-width: 80%; font-size: 1.4rem; line-height: 1.2; animation: pop 0.3s ease; }
-        .nova { background: var(--accent); align-self: flex-start; border-bottom-left-radius: 2px; }
+        body { background: #000; color: white; font-family: 'Londrina Solid', sans-serif; height: 100vh; margin: 0; display: flex; flex-direction: column; overflow: hidden; }
+        #chat { flex: 1; overflow-y: auto; padding: 30px; display: flex; flex-direction: column; gap: 15px; background: radial-gradient(circle at 50% 50%, #080815 0%, #000 100%); }
+        .msg { padding: 18px 25px; border-radius: 25px; max-width: 75%; font-size: 1.5rem; line-height: 1.2; }
+        .nova { background: #ff453a; align-self: flex-start; border-bottom-left-radius: 2px; box-shadow: 0 5px 15px rgba(255, 69, 58, 0.2); }
         .user { background: #111; align-self: flex-end; border-bottom-right-radius: 2px; border: 1px solid #333; }
-        .input-area { padding: 25px; background: #000; border-top: 1px solid #111; }
-        input { width: 100%; padding: 20px; border-radius: 50px; border: 1px solid #222; background: #080808; color: white; font-size: 1.3rem; outline: none; box-sizing: border-box; }
-        @keyframes pop { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        .header { padding: 20px; border-bottom: 1px solid #111; display: flex; justify-content: space-between; align-items: center; }
+        #thought-log { font-size: 0.7rem; color: #ff453a; letter-spacing: 2px; display: none; }
+        .input-area { padding: 30px; background: #000; border-top: 1px solid #111; }
+        input { width: 100%; padding: 20px; border-radius: 50px; border: 1px solid #222; background: #050505; color: white; font-size: 1.4rem; outline: none; box-sizing: border-box; }
     </style>
 </head>
 <body>
     <div class="header">
-        <span>NOVA <small style="color:#222">DICTIONARY_ENGINE</small></span>
-        <div id="status">SCANNING_IDLE</div>
+        <span style="font-size: 2.2rem;">NOVA <small style="color:#333">CORE_V6</small></span>
+        <div id="thought-log">SCANNING DICTIONARY...</div>
     </div>
-    <div id="chat"><div class="msg nova">Meaning scanner active. I'm ready.</div></div>
-    <div class="input-area"><input type="text" id="userInput" placeholder="Ask Nova anything..." autocomplete="off"></div>
+    <div id="chat"><div class="msg nova">Neural dictionary loaded. I am listening.</div></div>
+    <div class="input-area"><input type="text" id="userInput" placeholder="Speak to Nova..." autocomplete="off"></div>
 
     <script>
         const chat = document.getElementById('chat');
         const input = document.getElementById('userInput');
-        const status = document.getElementById('status');
+        const log = document.getElementById('thought-log');
 
-        // NOVA'S INTERNAL MEANING DICTIONARY
+        // --- THE DICTIONARY (MEANINGS & CONCEPTS) ---
+        // Instead of keywords, we define "Intent Clusters"
         const dictionary = {
-            identity: {
-                matches: [/who/i, /nova/i, /name/i, /you/i, /what/i],
-                full: "My name is nova, i am a very dumb and unknown model.",
-                single: "Nova"
+            "IDENTITY": {
+                words: ["who", "what", "identity", "name", "nova", "model", "ai", "bot", "yourself"],
+                meaning: "The concept of self-awareness and origin.",
+                response: "My name is nova, i am a very dumb and unknown model."
             },
-            math: {
-                matches: [/[0-9]/, /\+/, /\-/, /\*/, /\//, /calculate/i],
-                single: "Computing"
+            "GREETING": {
+                words: ["hi", "hello", "hey", "greetings", "sup", "yo", "morning"],
+                meaning: "A social initiation or acknowledgment.",
+                response: "Hello! My dictionary recognized your greeting."
             },
-            greeting: {
-                matches: [/hi/i, /hello/i, /hey/i, /sup/i],
-                full: "Hi. I am currently running on your local hardware.",
-                single: "Hello"
+            "MATH": {
+                words: ["plus", "minus", "times", "divided", "sum", "total", "calculate", "math"],
+                meaning: "Numerical logic and calculation.",
+                response: "I've detected a mathematical request. I'm processing the logic now..."
             }
         };
 
-        input.addEventListener('keypress', async (e) => {
+        input.addEventListener('keypress', (e) => {
             if (e.key === 'Enter' && input.value.trim() !== "") {
-                const q = input.value.trim();
+                const rawMessage = input.value.trim();
                 input.value = "";
-                processQuery(q);
+                novaThinkingProcess(rawMessage);
             }
         });
 
-        function processQuery(query) {
-            chat.innerHTML += `<div class="msg user">${query}</div>`;
+        // THE FUNCTION YOU REQUESTED
+        function novaThinkingProcess(message) {
+            // 1. Copy and Display User Message
+            chat.innerHTML += `<div class="msg user">${message}</div>`;
             chat.scrollTop = chat.scrollHeight;
-            status.innerText = "SCANNING DICTIONARY...";
+            
+            log.style.display = "block";
+
+            // 2. Scan the message and break it into individual words (The "Reader")
+            const wordsInMessage = message.toLowerCase().replace(/[^\w\s]/g, "").split(/\s+/);
+
+            // Determine if we need to "Think" (Long messages)
+            const delay = wordsInMessage.length > 1 ? 2500 : 400;
 
             setTimeout(() => {
-                let finalResponse = "Sorry, i dont know this yet!";
-                let foundMatch = false;
+                let detectedConcept = null;
+                let highestConfidence = 0;
 
-                // Scan the dictionary for meanings
-                for (let category in dictionary) {
-                    const data = dictionary[category];
-                    const matchCount = data.matches.filter(regex => regex.test(query)).length;
+                // 3. Scan through the dictionary to find the meanings (The "Thinker")
+                for (let concept in dictionary) {
+                    let matchesFound = 0;
+                    
+                    // Cross-reference every word in the user's message with the dictionary
+                    wordsInMessage.forEach(word => {
+                        if (dictionary[concept].words.includes(word)) {
+                            matchesFound++;
+                        }
+                    });
 
-                    // If we find a strong match (2+ related words) or a specific trigger
-                    if (matchCount >= 1) {
-                        // Logic: If it's a short query, give the "One Word" answer. 
-                        // If it's a full sentence, give the "Full" answer.
-                        const isShort = query.split(" ").length <= 1;
-                        finalResponse = isShort ? data.single : (data.full || data.single);
-                        foundMatch = true;
-                        break;
+                    // If we find more matches for this concept, it becomes the "Answer"
+                    if (matchesFound > highestConfidence) {
+                        highestConfidence = matchesFound;
+                        detectedConcept = dictionary[concept];
                     }
                 }
 
-                status.innerText = "SCANNING_IDLE";
+                // 4. Final Logic Gate
+                let finalResponse = "Sorry, i dont know this yet!";
+                
+                if (highestConfidence > 0) {
+                    // Check for the "Just saying Nova" case specifically
+                    if (message.toLowerCase() === "nova") {
+                        finalResponse = "Hello!";
+                    } else {
+                        finalResponse = detectedConcept.response;
+                    }
+                }
+
+                log.style.display = "none";
                 chat.innerHTML += `<div class="msg nova">${finalResponse}</div>`;
                 chat.scrollTop = chat.scrollHeight;
-            }, 800);
+            }, delay);
         }
     </script>
 </body>
