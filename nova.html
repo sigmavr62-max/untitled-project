@@ -2,198 +2,137 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nova Neural Core</title>
+    <title>Nova Neural Training Core</title>
     <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/fuse.js@6.6.2"></script>
     <style>
-        :root { 
-            --bg: #050505; --panel: #121214; --accent: #007aff; 
-            --text: #ffffff; --text-dim: #8e8e93; --user: #1c1c1e;
-        }
-        body { 
-            background: var(--bg); color: var(--text); 
-            font-family: -apple-system, "SF Pro Display", "Inter", sans-serif; 
-            margin: 0; display: flex; height: 100vh; overflow: hidden; 
-        }
-
-        /* Sidebar for Memory Visualization */
-        #sidebar { 
-            width: 300px; background: var(--panel); border-right: 1px solid #2c2c2e; 
-            display: flex; flex-direction: column; padding: 20px; 
-        }
-        .mem-node { 
-            font-size: 0.8rem; padding: 10px; border-bottom: 1px solid #2c2c2e; 
-            color: var(--text-dim); transition: 0.3s;
-        }
-        .mem-node:hover { color: var(--accent); background: #1a1a1c; }
-
+        :root { --bg: #050505; --accent: #007aff; --panel: #121214; --text: #ffffff; }
+        body { background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; margin: 0; display: flex; height: 100vh; }
+        
+        /* Training Sidebar */
+        #training-bay { width: 350px; background: var(--panel); border-right: 1px solid #222; display: flex; flex-direction: column; padding: 20px; overflow-y: auto; }
+        .memory-card { background: #1c1c1e; border-radius: 12px; padding: 15px; margin-bottom: 15px; border: 1px solid #333; font-size: 0.85rem; }
+        .memory-card img { width: 100%; border-radius: 6px; margin-bottom: 10px; }
+        
         /* Main Chat */
-        #main { flex: 1; display: flex; flex-direction: column; position: relative; }
-        header { padding: 20px 40px; border-bottom: 1px solid #2c2c2e; display: flex; justify-content: space-between; align-items: center; }
-        #chat-flow { flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; gap: 25px; }
-        
-        .bubble { padding: 18px 24px; border-radius: 22px; max-width: 70%; line-height: 1.6; font-size: 1.05rem; position: relative; }
-        .nova { background: var(--panel); align-self: flex-start; border: 1px solid #2c2c2e; }
+        #viewport { flex: 1; display: flex; flex-direction: column; }
+        #chat-area { flex: 1; padding: 40px; overflow-y: auto; display: flex; flex-direction: column; gap: 20px; }
+        .bubble { padding: 15px 20px; border-radius: 18px; max-width: 75%; line-height: 1.5; }
+        .nova { background: var(--panel); align-self: flex-start; border: 1px solid #222; }
         .user { background: var(--accent); align-self: flex-end; }
-        
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 8px; background: #32d74b; box-shadow: 0 0 10px #32d74b; }
 
-        .input-box { padding: 30px 40px; background: var(--bg); border-top: 1px solid #2c2c2e; display: flex; gap: 15px; }
-        #userInput { flex: 1; background: #1c1c1e; border: 1px solid #3a3a3c; border-radius: 30px; padding: 16px 25px; color: white; outline: none; font-size: 1rem; }
-        .action-btn { background: var(--panel); border: 1px solid #3a3a3c; color: white; width: 54px; height: 54px; border-radius: 50%; cursor: pointer; transition: 0.2s; }
-        .action-btn:hover { border-color: var(--accent); color: var(--accent); }
-
-        #version { position: absolute; bottom: 100px; right: 40px; font-size: 0.7rem; color: #444; pointer-events: none; }
+        .input-wrap { padding: 30px; background: var(--bg); border-top: 1px solid #222; display: flex; gap: 15px; }
+        #userInput { flex: 1; background: #1c1c1e; border: 1px solid #333; border-radius: 25px; padding: 15px 20px; color: white; outline: none; }
+        .btn { background: var(--panel); border: 1px solid #333; color: white; padding: 10px 20px; border-radius: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div id="sidebar">
-        <h3 style="margin-top:0">Neural Memory</h3>
-        <div id="memory-list" style="overflow-y:auto"></div>
+<div id="training-bay">
+    <h2 style="color: var(--accent)">Neural Training Bay</h2>
+    <p style="font-size: 0.8rem; color: #666">Long-term visual memory (IndexedDB)</p>
+    <div id="memory-vessel"></div>
+</div>
+
+<div id="viewport">
+    <div id="chat-area">
+        <div class="bubble nova">Training Core Online. Upload assets to teach my neural pathways.</div>
     </div>
-
-    <div id="main">
-        <header>
-            <div><span class="status-dot"></span><b>NOVA_OS</b></div>
-            <div style="font-size: 0.9rem; color: var(--text-dim)">Local Compute: 32GB RAM Detected</div>
-        </header>
-
-        <div id="chat-flow"></div>
-        <div id="version">BUILD_2026_V1.1.000</div>
-
-        <div class="input-box">
-            <input type="file" id="imgIn" hidden accept="image/*">
-            <button class="action-btn" onclick="document.getElementById('imgIn').click()">+</button>
-            <input type="text" id="userInput" placeholder="Synthesize message..." autocomplete="off">
-        </div>
+    <div class="input-wrap">
+        <input type="file" id="fileIn" hidden accept="image/*">
+        <button class="btn" onclick="document.getElementById('fileIn').click()">Upload Asset</button>
+        <input type="text" id="userInput" placeholder="Teach me about this image...">
     </div>
+</div>
 
-    <canvas id="pCanvas" style="display:none"></canvas>
+<script>
+    const vessel = document.getElementById('memory-vessel');
+    const chat = document.getElementById('chat-area');
+    const fileIn = document.getElementById('fileIn');
+    const input = document.getElementById('userInput');
 
-    <script>
-        /**
-         * NOVA NEURAL ENGINE - CORE SCRIPT
-         * Handles Persistence, Fuzzy Reasoning, and Vision OCR
-         */
-        const chat = document.getElementById('chat-flow');
-        const input = document.getElementById('userInput');
-        const memList = document.getElementById('memory-list');
-        
-        // --- DATABASE ARCHITECTURE (IndexedDB) ---
-        let db;
-        const request = indexedDB.open("NovaBrain", 1);
-        request.onupgradeneeded = (e) => {
-            db = e.target.result;
-            db.createObjectStore("logs", { keyPath: "id", autoIncrement: true });
-            db.createObjectStore("knowledge", { keyPath: "keyword" });
+    // --- DATABASE ENGINE (IndexedDB) ---
+    let db;
+    const dbReq = indexedDB.open("NovaVision", 1);
+    dbReq.onupgradeneeded = (e) => {
+        db = e.target.result;
+        db.createObjectStore("vision_memory", { keyPath: "id", autoIncrement: true });
+    };
+    dbReq.onsuccess = (e) => { db = e.target.result; syncMemory(); };
+
+    // --- TRAINING LOGIC ---
+    let pendingImage = null;
+
+    fileIn.onchange = (e) => {
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = (ev) => {
+            pendingImage = ev.target.result;
+            addMessage('nova', "Image received. Tell me: **What does this image actually mean?**");
         };
-        request.onsuccess = (e) => { 
-            db = e.target.result; 
-            loadSidebar(); 
-            greet();
-        };
+    };
 
-        // --- BRAIN FUNCTIONS ---
-        async function remember(type, content) {
-            const tx = db.transaction("logs", "readwrite");
-            tx.objectStore("logs").add({ type, content, timestamp: Date.now() });
-            loadSidebar();
-        }
-
-        async function loadSidebar() {
-            memList.innerHTML = "";
-            const tx = db.transaction("logs", "readonly");
-            tx.objectStore("logs").openCursor(null, 'prev').onsuccess = (e) => {
-                const cursor = e.target.result;
-                if (cursor) {
-                    const el = document.createElement('div');
-                    el.className = "mem-node";
-                    el.innerText = `[${cursor.value.type}] ${cursor.value.content.substring(0, 30)}...`;
-                    memList.appendChild(el);
-                    cursor.continue();
-                }
-            };
-        }
-
-        // --- CONVERSATION LOGIC ---
-        const personality = {
-            greetings: ["Systems online.", "Memory sectors clear.", "Awaiting input, user."],
-            unknown: ["Synthesizing new data... I don't recognize that yet.", "Information not found in local 1.5TB cache."]
-        };
-
-        function addMessage(who, text) {
-            const b = document.createElement('div');
-            b.className = `bubble ${who}`;
-            b.innerHTML = text;
-            chat.appendChild(b);
-            chat.scrollTop = chat.scrollHeight;
-            if(who === 'user') remember('CHAT', text);
-        }
-
-        function greet() {
-            const r = personality.greetings[Math.floor(Math.random() * personality.greetings.length)];
-            addMessage('nova', r);
-        }
-
-        // --- INPUT HANDLING ---
-        input.addEventListener('keypress', (e) => {
-            if(e.key === 'Enter' && input.value.trim()) {
-                const m = input.value;
-                input.value = "";
-                addMessage('user', m);
-                processThought(m);
-            }
-        });
-
-        async function processThought(q) {
-            const lower = q.toLowerCase();
-            let res = personality.unknown[0];
-
-            if(lower.includes("name")) res = "Nova. Built for local high-speed processing.";
-            if(lower.includes("clear memory")) {
-                db.transaction("logs", "readwrite").objectStore("logs").clear();
-                location.reload();
-            }
+    input.onkeypress = (e) => {
+        if(e.key === 'Enter' && input.value.trim()) {
+            const val = input.value;
+            input.value = "";
+            addMessage('user', val);
             
-            setTimeout(() => addMessage('nova', res), 700);
+            if(pendingImage) {
+                trainNova(pendingImage, val);
+            } else {
+                addMessage('nova', "Processing thought...");
+            }
         }
+    };
 
-        // --- VISION ENGINE (OCR & Color) ---
-        document.getElementById('imgIn').addEventListener('change', async (e) => {
-            const file = e.target.files[0];
-            if(!file) return;
+    async function trainNova(imgData, meaning) {
+        // Deep OCR Scan for automated tagging
+        const ocr = await Tesseract.recognize(imgData, 'eng');
+        const textFound = ocr.data.text.trim();
 
-            addMessage('user', `Uploaded Image: ${file.name}`);
-            const logId = `vision-${Date.now()}`;
-            addMessage('nova', `<span id="${logId}">Extracting neural data from pixels...</span>`);
+        const entry = {
+            image: imgData,
+            meaning: meaning,
+            ocr_text: textFound,
+            timestamp: Date.now()
+        };
 
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.onload = (ev) => {
-                const img = new Image();
-                img.src = ev.target.result;
-                img.onload = async () => {
-                    // OCR logic
-                    try {
-                        const out = await Tesseract.recognize(img.src, 'eng');
-                        let text = out.data.text.trim();
-                        let isYourAsset = text.toLowerCase().includes("dash01") || text.toLowerCase().includes("polar");
-                        
-                        document.getElementById(logId).innerHTML = `
-                            <b>Visual Scan:</b><br>
-                            - Identity: ${isYourAsset ? "Verified Dash01 Asset" : "External Data"}<br>
-                            - Text: "${text || "No legible text"}"<br>
-                            - Status: Cool.
-                        `;
-                        remember('VISION', text || "Image Scan");
-                    } catch(err) {
-                        document.getElementById(logId).innerText = "OCR Failure: Image noise too high.";
-                    }
-                };
-            };
-        });
-    </script>
+        const tx = db.transaction("vision_memory", "readwrite");
+        tx.objectStore("vision_memory").add(entry);
+        tx.oncomplete = () => {
+            pendingImage = null;
+            addMessage('nova', `Neural pathway updated. I now understand this image means: "${meaning}"`);
+            syncMemory();
+        };
+    }
+
+    function syncMemory() {
+        vessel.innerHTML = "";
+        const tx = db.transaction("vision_memory", "readonly");
+        tx.objectStore("vision_memory").openCursor(null, 'prev').onsuccess = (e) => {
+            const cursor = e.target.result;
+            if(cursor) {
+                const card = document.createElement('div');
+                card.className = "memory-card";
+                card.innerHTML = `
+                    <img src="${cursor.value.image}">
+                    <b>Meaning:</b> ${cursor.value.meaning}<br>
+                    <b>AI Read:</b> "${cursor.value.ocr_text.substring(0,30)}..."
+                `;
+                vessel.appendChild(card);
+                cursor.continue();
+            }
+        };
+    }
+
+    function addMessage(who, text) {
+        const b = document.createElement('div');
+        b.className = `bubble ${who}`;
+        b.innerHTML = text;
+        chat.appendChild(b);
+        chat.scrollTop = chat.scrollHeight;
+    }
+</script>
 </body>
 </html>
